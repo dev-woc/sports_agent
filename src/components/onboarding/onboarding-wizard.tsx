@@ -38,7 +38,7 @@ export function OnboardingWizard() {
 		fetch("/api/onboarding")
 			.then((r) => r.json())
 			.then((data) => {
-				if (data.athleteProfile) router.push("/editor");
+				if (data.athleteProfile) router.push("/contracts");
 			})
 			.catch(() => {});
 	}, [router]);
@@ -103,7 +103,7 @@ export function OnboardingWizard() {
 				setError(data.error ?? "Something went wrong. Please try again.");
 				return;
 			}
-			router.push("/editor");
+			router.push("/contracts");
 		} catch {
 			setError("Network error. Please try again.");
 		} finally {

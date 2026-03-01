@@ -8,7 +8,7 @@ export function GoogleButton() {
 			type="button"
 			variant="outline"
 			className="w-full"
-			onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/editor" })}
+			onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/contracts" })}
 		>
 			Continue with Google
 		</Button>

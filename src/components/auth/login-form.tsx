@@ -24,7 +24,7 @@ export function LoginForm() {
 				setError(signInError.message ?? "Invalid credentials");
 				return;
 			}
-			router.push("/editor");
+			router.push("/contracts");
 		} catch {
 			setError("An unexpected error occurred");
 		} finally {
