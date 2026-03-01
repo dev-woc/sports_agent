@@ -119,7 +119,7 @@ export function OnboardingWizard() {
 	];
 
 	return (
-		<Card className="w-full max-w-md">
+		<Card className="w-full max-w-lg">
 			<CardHeader>
 				<div className="flex gap-2 justify-center mb-2">
 					{[1, 2, 3].map((s) => (
@@ -129,6 +129,9 @@ export function OnboardingWizard() {
 						/>
 					))}
 				</div>
+				<p className="text-xs font-medium text-muted-foreground text-center tracking-wide uppercase">
+					Step {step} of 3
+				</p>
 				<CardTitle className="text-2xl">{stepTitles[step - 1]}</CardTitle>
 				<CardDescription>{stepDescriptions[step - 1]}</CardDescription>
 			</CardHeader>
