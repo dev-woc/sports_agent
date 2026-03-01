@@ -1,7 +1,5 @@
 "use client";
-
-import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AddLinkButton } from "@/components/editor/add-link-button";
 import { EditorToolbar, type LayoutMode } from "@/components/editor/editor-toolbar";
@@ -9,7 +7,6 @@ import { LinkList } from "@/components/editor/link-list";
 import { ProfileForm } from "@/components/editor/profile-form";
 import { PreviewPanel } from "@/components/preview/preview-panel";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfile } from "@/hooks/use-profile";
 import type { LinkItem } from "@/types";
@@ -17,7 +14,6 @@ import type { LinkItem } from "@/types";
 export default function EditorPage() {
 	const { profile, links: serverLinks, isLoading, error, refetch } = useProfile();
 
-	// Local editor state
 	const [displayName, setDisplayName] = useState("");
 	const [bio, setBio] = useState("");
 	const [avatarUrl, setAvatarUrl] = useState("");
@@ -26,12 +22,10 @@ export default function EditorPage() {
 	const [isSaving, setIsSaving] = useState(false);
 	const [layoutMode, setLayoutMode] = useState<LayoutMode>("both");
 
-	// Track items added/deleted locally (not yet persisted)
 	const addedLinksRef = useRef<LinkItem[]>([]);
 	const deletedIdsRef = useRef<Set<string>>(new Set());
 	const initializedRef = useRef(false);
 
-	// Initialize local state from server data
 	useEffect(() => {
 		if (profile && !initializedRef.current) {
 			setDisplayName(profile.displayName);
@@ -42,20 +36,18 @@ export default function EditorPage() {
 		}
 	}, [profile, serverLinks]);
 
-	const markDirty = useCallback(() => setIsDirty(true), []);
+	const markDirty = () => setIsDirty(true);
 
-	const handleDisplayNameChange = (value: string) => {
-		setDisplayName(value);
+	const handleDisplayNameChange = (v: string) => {
+		setDisplayName(v);
 		markDirty();
 	};
-
-	const handleBioChange = (value: string) => {
-		setBio(value);
+	const handleBioChange = (v: string) => {
+		setBio(v);
 		markDirty();
 	};
-
-	const handleAvatarUrlChange = (value: string) => {
-		setAvatarUrl(value);
+	const handleAvatarUrlChange = (v: string) => {
+		setAvatarUrl(v);
 		markDirty();
 	};
 
@@ -65,9 +57,8 @@ export default function EditorPage() {
 	};
 
 	const handleDeleteLink = (id: string) => {
-		// Check if it was a newly added item (not yet in DB)
-		const wasAdded = addedLinksRef.current.some((l) => l.id === id);
-		if (wasAdded) {
+		const isNew = addedLinksRef.current.some((l) => l.id === id);
+		if (isNew) {
 			addedLinksRef.current = addedLinksRef.current.filter((l) => l.id !== id);
 		} else {
 			deletedIdsRef.current.add(id);
@@ -77,9 +68,8 @@ export default function EditorPage() {
 	};
 
 	const handleAddLink = (title: string, url: string) => {
-		const tempId = crypto.randomUUID();
 		const newLink: LinkItem = {
-			id: tempId,
+			id: crypto.randomUUID(),
 			profileId: profile?.id ?? "",
 			type: "link",
 			title,
@@ -94,9 +84,8 @@ export default function EditorPage() {
 	};
 
 	const handleAddHeader = (title: string) => {
-		const tempId = crypto.randomUUID();
 		const newHeader: LinkItem = {
-			id: tempId,
+			id: crypto.randomUUID(),
 			profileId: profile?.id ?? "",
 			type: "header",
 			title,
@@ -111,9 +100,8 @@ export default function EditorPage() {
 	};
 
 	const handleAddDivider = () => {
-		const tempId = crypto.randomUUID();
 		const newDivider: LinkItem = {
-			id: tempId,
+			id: crypto.randomUUID(),
 			profileId: profile?.id ?? "",
 			type: "divider",
 			title: "",
@@ -130,27 +118,18 @@ export default function EditorPage() {
 	const handleSave = async () => {
 		if (!profile || isSaving) return;
 		setIsSaving(true);
-
 		try {
-			// 1. Update profile
 			const profileRes = await fetch("/api/profile", {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					displayName,
-					bio,
-					avatarUrl,
-					theme: profile.theme,
-				}),
+				body: JSON.stringify({ displayName, bio, avatarUrl, theme: profile.theme }),
 			});
 			if (!profileRes.ok) throw new Error("Failed to update profile");
 
-			// 2. Delete removed items
 			for (const id of deletedIdsRef.current) {
 				await fetch(`/api/links/${id}`, { method: "DELETE" });
 			}
 
-			// 3. Add new items
 			const newIdMap = new Map<string, string>();
 			for (const item of addedLinksRef.current) {
 				const res = await fetch("/api/links", {
@@ -168,14 +147,9 @@ export default function EditorPage() {
 				}
 			}
 
-			// 4. Reorder all items (using server IDs)
 			const reorderItems = links
 				.filter((l) => !deletedIdsRef.current.has(l.id))
-				.map((l, index) => ({
-					id: newIdMap.get(l.id) ?? l.id,
-					sortOrder: index,
-				}));
-
+				.map((l, index) => ({ id: newIdMap.get(l.id) ?? l.id, sortOrder: index }));
 			if (reorderItems.length > 0) {
 				await fetch("/api/links/reorder", {
 					method: "PUT",
@@ -184,11 +158,8 @@ export default function EditorPage() {
 				});
 			}
 
-			// Reset tracking
 			addedLinksRef.current = [];
 			deletedIdsRef.current.clear();
-
-			// Refetch to get server state
 			initializedRef.current = false;
 			await refetch();
 			setIsDirty(false);
@@ -200,30 +171,6 @@ export default function EditorPage() {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div className="flex min-h-[60vh] items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className="flex min-h-[60vh] items-center justify-center">
-				<p className="text-destructive">{error}</p>
-			</div>
-		);
-	}
-
-	if (!profile) {
-		return (
-			<div className="flex min-h-[60vh] items-center justify-center">
-				<p className="text-muted-foreground">No profile found. Please complete signup first.</p>
-			</div>
-		);
-	}
-
 	const previewLinks = links.map((l) => ({
 		id: l.id,
 		type: l.type as "link" | "header" | "divider",
@@ -231,8 +178,33 @@ export default function EditorPage() {
 		url: l.url,
 	}));
 
-	const editorPanel = (
-		<div className="flex flex-col gap-6 p-6">
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center min-h-[50vh]">
+				<p className="text-muted-foreground">Loading...</p>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+				<p className="text-red-600">{error}</p>
+				<Button onClick={() => refetch()}>Retry</Button>
+			</div>
+		);
+	}
+
+	if (!profile) {
+		return (
+			<div className="flex items-center justify-center min-h-[50vh]">
+				<p className="text-muted-foreground">No profile found. Please sign up first.</p>
+			</div>
+		);
+	}
+
+	const editorContent = (
+		<div className="space-y-6 p-4 lg:p-6">
 			<ProfileForm
 				displayName={displayName}
 				bio={bio}
@@ -241,10 +213,7 @@ export default function EditorPage() {
 				onBioChange={handleBioChange}
 				onAvatarUrlChange={handleAvatarUrlChange}
 			/>
-
-			<Separator />
-
-			<div className="space-y-4">
+			<div className="space-y-3">
 				<h2 className="text-lg font-semibold">Links</h2>
 				<LinkList links={links} onReorder={handleReorder} onDelete={handleDeleteLink} />
 				<AddLinkButton
@@ -253,22 +222,11 @@ export default function EditorPage() {
 					onAddDivider={handleAddDivider}
 				/>
 			</div>
-
-			<Button onClick={handleSave} disabled={!isDirty || isSaving} className="w-full">
-				{isSaving ? (
-					<>
-						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-						Saving...
-					</>
-				) : (
-					"Save"
-				)}
-			</Button>
 		</div>
 	);
 
-	const previewPanel = (
-		<div className="flex items-start justify-center p-6">
+	const previewContent = (
+		<div className="flex items-start justify-center p-4 lg:p-6">
 			<PreviewPanel
 				displayName={displayName}
 				bio={bio}
@@ -279,44 +237,42 @@ export default function EditorPage() {
 	);
 
 	return (
-		<div className="mx-auto max-w-7xl">
-			{/* Toolbar */}
-			<div className="flex items-center justify-between border-b px-6 py-3">
-				<h1 className="text-lg font-semibold">Editor</h1>
+		<div className="flex flex-col h-full">
+			<div className="flex items-center justify-between border-b px-4 py-2">
 				<EditorToolbar mode={layoutMode} onModeChange={setLayoutMode} />
+				<Button onClick={handleSave} disabled={!isDirty || isSaving} aria-label="Save">
+					{isSaving ? "Saving..." : "Save"}
+				</Button>
 			</div>
 
 			{/* Desktop layout */}
-			<div className="hidden lg:block">
-				<div className="grid grid-cols-2 divide-x min-h-[calc(100vh-8rem)]">
-					{(layoutMode === "both" || layoutMode === "editor") && (
-						<div className={`overflow-y-auto ${layoutMode === "editor" ? "col-span-2" : ""}`}>
-							{editorPanel}
-						</div>
-					)}
-					{(layoutMode === "both" || layoutMode === "preview") && (
-						<div
-							className={`overflow-y-auto bg-muted/30 ${layoutMode === "preview" ? "col-span-2" : ""}`}
-						>
-							{previewPanel}
-						</div>
-					)}
-				</div>
+			<div
+				className="hidden lg:grid flex-1"
+				style={{
+					gridTemplateColumns: layoutMode === "both" ? "1fr 1fr" : "1fr",
+				}}
+			>
+				{(layoutMode === "both" || layoutMode === "editor") && (
+					<div className="overflow-y-auto border-r">{editorContent}</div>
+				)}
+				{(layoutMode === "both" || layoutMode === "preview") && (
+					<div className="overflow-y-auto bg-muted/20">{previewContent}</div>
+				)}
 			</div>
 
 			{/* Mobile layout */}
-			<div className="lg:hidden">
-				<Tabs defaultValue="edit" className="w-full">
-					<TabsList className="w-full">
-						<TabsTrigger value="edit" className="flex-1">
-							Edit
-						</TabsTrigger>
-						<TabsTrigger value="preview" className="flex-1">
-							Preview
-						</TabsTrigger>
+			<div className="lg:hidden flex-1">
+				<Tabs defaultValue="edit" className="h-full flex flex-col">
+					<TabsList className="mx-4 mt-2">
+						<TabsTrigger value="edit">Edit</TabsTrigger>
+						<TabsTrigger value="preview">Preview</TabsTrigger>
 					</TabsList>
-					<TabsContent value="edit">{editorPanel}</TabsContent>
-					<TabsContent value="preview">{previewPanel}</TabsContent>
+					<TabsContent value="edit" className="flex-1 overflow-y-auto">
+						{editorContent}
+					</TabsContent>
+					<TabsContent value="preview" className="flex-1 overflow-y-auto">
+						{previewContent}
+					</TabsContent>
 				</Tabs>
 			</div>
 		</div>

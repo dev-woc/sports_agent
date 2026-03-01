@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/auth/auth-provider";
-import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Link in Bio Page Builder",
-	description: "Create your personal link-in-bio page",
+	title: "Athlete OS",
+	description: "The unified athlete career platform — NIL, contracts, recruiting, and more.",
 };
 
 export default function RootLayout({
@@ -27,8 +27,10 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-				<AuthProvider>{children}</AuthProvider>
-				<Toaster />
+				<AuthProvider>
+					{children}
+					<Toaster />
+				</AuthProvider>
 			</body>
 		</html>
 	);

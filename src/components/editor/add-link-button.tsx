@@ -1,6 +1,4 @@
 "use client";
-
-import { Link, Minus, Type } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +22,7 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 	const [headerOpen, setHeaderOpen] = useState(false);
 	const [linkTitle, setLinkTitle] = useState("");
 	const [linkUrl, setLinkUrl] = useState("");
-	const [headerTitle, setHeaderTitle] = useState("");
+	const [headerText, setHeaderText] = useState("");
 
 	const handleAddLink = () => {
 		if (linkTitle.trim() && linkUrl.trim()) {
@@ -36,9 +34,9 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 	};
 
 	const handleAddHeader = () => {
-		if (headerTitle.trim()) {
-			onAddHeader(headerTitle.trim());
-			setHeaderTitle("");
+		if (headerText.trim()) {
+			onAddHeader(headerText.trim());
+			setHeaderText("");
 			setHeaderOpen(false);
 		}
 	};
@@ -48,7 +46,6 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 			<Dialog open={linkOpen} onOpenChange={setLinkOpen}>
 				<DialogTrigger asChild>
 					<Button variant="outline" size="sm">
-						<Link className="mr-2 h-4 w-4" />
 						Add Link
 					</Button>
 				</DialogTrigger>
@@ -64,7 +61,6 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 								value={linkTitle}
 								onChange={(e) => setLinkTitle(e.target.value)}
 								placeholder="My Website"
-								aria-label="Title"
 							/>
 						</div>
 						<div className="space-y-2">
@@ -74,7 +70,6 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 								value={linkUrl}
 								onChange={(e) => setLinkUrl(e.target.value)}
 								placeholder="https://example.com"
-								aria-label="URL"
 							/>
 						</div>
 						<Button onClick={handleAddLink} className="w-full">
@@ -87,7 +82,6 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 			<Dialog open={headerOpen} onOpenChange={setHeaderOpen}>
 				<DialogTrigger asChild>
 					<Button variant="outline" size="sm">
-						<Type className="mr-2 h-4 w-4" />
 						Add Header
 					</Button>
 				</DialogTrigger>
@@ -97,13 +91,12 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 					</DialogHeader>
 					<div className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="header-title">Header</Label>
+							<Label htmlFor="header-text">Header</Label>
 							<Input
-								id="header-title"
-								value={headerTitle}
-								onChange={(e) => setHeaderTitle(e.target.value)}
+								id="header-text"
+								value={headerText}
+								onChange={(e) => setHeaderText(e.target.value)}
 								placeholder="Section Title"
-								aria-label="Header"
 							/>
 						</div>
 						<Button onClick={handleAddHeader} className="w-full">
@@ -114,7 +107,6 @@ export function AddLinkButton({ onAddLink, onAddHeader, onAddDivider }: AddLinkB
 			</Dialog>
 
 			<Button variant="outline" size="sm" onClick={onAddDivider}>
-				<Minus className="mr-2 h-4 w-4" />
 				Add Divider
 			</Button>
 		</div>

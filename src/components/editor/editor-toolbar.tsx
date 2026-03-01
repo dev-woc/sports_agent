@@ -1,6 +1,4 @@
 "use client";
-
-import { Columns2, PanelLeft, PanelRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export type LayoutMode = "both" | "editor" | "preview";
@@ -12,31 +10,18 @@ interface EditorToolbarProps {
 
 export function EditorToolbar({ mode, onModeChange }: EditorToolbarProps) {
 	return (
-		<div className="hidden lg:flex items-center gap-1 rounded-lg border p-1">
-			<Button
-				variant={mode === "both" ? "secondary" : "ghost"}
-				size="sm"
-				onClick={() => onModeChange("both")}
-				aria-label="Show both panels"
-			>
-				<Columns2 className="h-4 w-4" />
-			</Button>
-			<Button
-				variant={mode === "editor" ? "secondary" : "ghost"}
-				size="sm"
-				onClick={() => onModeChange("editor")}
-				aria-label="Show editor only"
-			>
-				<PanelLeft className="h-4 w-4" />
-			</Button>
-			<Button
-				variant={mode === "preview" ? "secondary" : "ghost"}
-				size="sm"
-				onClick={() => onModeChange("preview")}
-				aria-label="Show preview only"
-			>
-				<PanelRight className="h-4 w-4" />
-			</Button>
+		<div className="hidden lg:flex gap-1">
+			{(["both", "editor", "preview"] as LayoutMode[]).map((m) => (
+				<Button
+					key={m}
+					variant={mode === m ? "default" : "ghost"}
+					size="sm"
+					onClick={() => onModeChange(m)}
+					aria-label={`Layout: ${m}`}
+				>
+					{m.charAt(0).toUpperCase() + m.slice(1)}
+				</Button>
+			))}
 		</div>
 	);
 }

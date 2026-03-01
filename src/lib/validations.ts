@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Reserved slugs that conflict with app routes
 export const RESERVED_SLUGS = [
 	"login",
 	"signup",
@@ -52,7 +51,7 @@ export const linkItemSchema = z
 		(data) => {
 			if (data.type === "link") return !!data.title && !!data.url;
 			if (data.type === "header") return !!data.title;
-			return true; // divider needs nothing
+			return true;
 		},
 		{ message: "Links require title and URL; headers require title" },
 	);
@@ -68,4 +67,21 @@ export const reorderSchema = z.object({
 
 export const slugCheckSchema = z.object({
 	slug: z.string().min(1),
+});
+
+export const DIVISIONS = ["D1", "D2", "D3", "NAIA", "NJCAA", "High School"] as const;
+export type Division = (typeof DIVISIONS)[number];
+
+export const athleteProfileSchema = z.object({
+	sport: z.string().min(1, "Sport is required"),
+	position: z.string().optional().default(""),
+	school: z.string().min(1, "School is required").max(100, "School name too long"),
+	division: z.enum(DIVISIONS, { message: "Invalid division" }),
+	state: z.string().length(2, "Must be a valid 2-letter state code"),
+	gradYear: z.number().int().min(2025).max(2032),
+	eligibilityStatus: z.string().min(1, "Eligibility status is required"),
+	nilEligible: z.boolean().optional().default(false),
+	socialInstagram: z.string().optional().default(""),
+	socialTiktok: z.string().optional().default(""),
+	socialTwitter: z.string().optional().default(""),
 });

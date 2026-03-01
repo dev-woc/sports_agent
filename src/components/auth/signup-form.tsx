@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,79 +8,51 @@ import { authClient } from "@/lib/auth/client";
 import { slugSchema } from "@/lib/validations";
 import { SlugInput } from "./slug-input";
 
-interface FormErrors {
-	name?: string;
-	email?: string;
-	password?: string;
-	slug?: string;
-	general?: string;
-}
-
 export function SignupForm() {
 	const router = useRouter();
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [slug, setSlug] = useState("");
-	const [errors, setErrors] = useState<FormErrors>({});
-	const [loading, setLoading] = useState(false);
-
-	const validate = (): boolean => {
-		const newErrors: FormErrors = {};
-
-		if (!name.trim()) newErrors.name = "Name is required";
-		if (!email.trim()) newErrors.email = "Email is required";
-		if (password.length < 8) newErrors.password = "Password must be at least 8 characters";
-
-		const slugResult = slugSchema.safeParse(slug);
-		if (!slugResult.success) {
-			newErrors.slug = slugResult.error.issues[0]?.message ?? "Invalid username";
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
+	const [error, setError] = useState("");
+	const [slugError, setSlugError] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!validate()) return;
+		setError("");
+		setSlugError("");
 
-		setLoading(true);
-		setErrors({});
+		const slugResult = slugSchema.safeParse(slug);
+		if (!slugResult.success) {
+			setSlugError(slugResult.error.issues[0]?.message ?? "Invalid username");
+			return;
+		}
 
+		setIsLoading(true);
 		try {
-			// 1. Create Neon Auth user
-			const { error } = await authClient.signUp.email({
-				email,
-				password,
-				name,
-			});
-
-			if (error) {
-				setErrors({ general: error.message || "Failed to create account" });
-				setLoading(false);
+			const { error: signUpError } = await authClient.signUp.email({ email, password, name });
+			if (signUpError) {
+				setError(signUpError.message ?? "Signup failed");
 				return;
 			}
 
-			// 2. Create profile with slug
 			const profileRes = await fetch("/api/profile", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ slug, displayName: name }),
 			});
-
 			if (!profileRes.ok) {
 				const data = await profileRes.json();
-				setErrors({ general: data.error || "Failed to create profile" });
-				setLoading(false);
+				setError(data.error ?? "Failed to create profile");
 				return;
 			}
 
-			// 3. Redirect to editor
-			router.push("/editor");
+			router.push("/onboarding");
 		} catch {
-			setErrors({ general: "Something went wrong. Please try again." });
-			setLoading(false);
+			setError("An unexpected error occurred");
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -91,46 +62,38 @@ export function SignupForm() {
 				<Label htmlFor="name">Name</Label>
 				<Input
 					id="name"
-					placeholder="Your name"
 					value={name}
 					onChange={(e) => setName(e.target.value)}
-					aria-label="Name"
+					placeholder="Your name"
+					required
 				/>
-				{errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
 			</div>
-
 			<div className="space-y-2">
 				<Label htmlFor="email">Email</Label>
 				<Input
 					id="email"
 					type="email"
-					placeholder="you@example.com"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
-					aria-label="Email"
+					placeholder="you@example.com"
+					required
 				/>
-				{errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
 			</div>
-
 			<div className="space-y-2">
 				<Label htmlFor="password">Password</Label>
 				<Input
 					id="password"
 					type="password"
-					placeholder="At least 8 characters"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
-					aria-label="Password"
+					placeholder="********"
+					required
 				/>
-				{errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
 			</div>
-
-			<SlugInput value={slug} onChange={setSlug} error={errors.slug} />
-
-			{errors.general && <p className="text-sm text-destructive text-center">{errors.general}</p>}
-
-			<Button type="submit" className="w-full" disabled={loading}>
-				{loading ? "Creating Account..." : "Create Account"}
+			<SlugInput value={slug} onChange={setSlug} error={slugError} />
+			{error && <p className="text-sm text-red-600">{error}</p>}
+			<Button type="submit" className="w-full" disabled={isLoading}>
+				{isLoading ? "Creating..." : "Create Account"}
 			</Button>
 		</form>
 	);

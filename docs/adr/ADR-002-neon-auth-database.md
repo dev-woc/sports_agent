@@ -8,7 +8,7 @@
 
 ## Context
 
-We need an authentication provider and a database for the LinkBio MVP. Speed of setup and developer experience are the primary concerns at this stage.
+We need an authentication provider and a database for the Athlete OS MVP. Speed of setup and developer experience are the primary concerns at this stage.
 
 ## Decision
 

@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { LinkItem, Profile } from "@/types";
@@ -22,7 +21,6 @@ export function useProfile(): UseProfileReturn {
 	const fetchProfile = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
-
 		try {
 			const res = await fetch("/api/profile");
 			if (!res.ok) {
@@ -32,7 +30,6 @@ export function useProfile(): UseProfileReturn {
 				}
 				throw new Error("Failed to fetch profile");
 			}
-
 			const data = await res.json();
 			setProfile(data.profile);
 			setLinks(data.links ?? []);
@@ -41,7 +38,7 @@ export function useProfile(): UseProfileReturn {
 		} finally {
 			setIsLoading(false);
 		}
-	}, []);
+	}, [router]);
 
 	useEffect(() => {
 		fetchProfile();

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { and, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
@@ -13,13 +15,13 @@ export async function PUT(request: NextRequest) {
 		return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 	}
 
-	const { data } = await auth.getSession();
-	if (!data?.user) {
+	const { data: session } = await auth.getSession();
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	const profile = await db.query.profiles.findFirst({
-		where: eq(profiles.userId, data.user.id),
+		where: eq(profiles.userId, session.user.id),
 	});
 	if (!profile) {
 		return NextResponse.json({ error: "Profile not found" }, { status: 404 });
@@ -31,13 +33,14 @@ export async function PUT(request: NextRequest) {
 		return NextResponse.json({ error: result.error.issues[0]?.message }, { status: 400 });
 	}
 
-	// Update each item's sort order with ownership check
-	for (const item of result.data.items) {
-		await db
-			.update(linkItems)
-			.set({ sortOrder: item.sortOrder, updatedAt: new Date() })
-			.where(and(eq(linkItems.id, item.id), eq(linkItems.profileId, profile.id)));
-	}
+	await Promise.all(
+		result.data.items.map((item) =>
+			db
+				.update(linkItems)
+				.set({ sortOrder: item.sortOrder, updatedAt: new Date() })
+				.where(and(eq(linkItems.id, item.id), eq(linkItems.profileId, profile.id))),
+		),
+	);
 
 	return NextResponse.json({ success: true });
 }

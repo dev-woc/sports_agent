@@ -1,8 +1,8 @@
-# Architecture Documentation — Athlete OS (LinkBio MVP)
+# Architecture Documentation — Athlete OS
 
 **Version:** 1.0 | **Date:** February 28, 2026 | **Status:** Living Document
 
-> This document covers the current LinkBio MVP architecture and the planned evolution toward the full Athlete OS platform. See [PRD.md](./PRD.md) for product requirements.
+> This document covers the current Athlete OS MVP architecture and the planned evolution toward the full platform. See [PRD.md](./PRD.md) for product requirements.
 
 ---
 
@@ -19,13 +19,13 @@
 9. [Infrastructure & Deployment](#9-infrastructure--deployment)
 10. [Quality Attributes](#10-quality-attributes)
 11. [Architecture Decision Records](#11-architecture-decision-records)
-12. [Roadmap: LinkBio → Athlete OS](#12-roadmap-linkbio--athlete-os)
+12. [Roadmap: MVP → Full Platform](#12-roadmap-mvp--full-platform)
 
 ---
 
 ## 1. System Context (C4 Level 1)
 
-### Current State: LinkBio MVP
+### Current State: Athlete OS MVP
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -33,7 +33,7 @@
 │                                                                          │
 │   ┌─────────┐         ┌──────────────────────┐         ┌─────────────┐  │
 │   │ Athlete │ ──────► │                      │ ──────► │  Neon Auth  │  │
-│   │ /Parent │         │     LinkBio App      │         │  (Identity) │  │
+│   │ /Parent │         │    Athlete OS App    │         │  (Identity) │  │
 │   │  /Coach │ ◄────── │  (Athlete Profile &  │ ──────► │  Neon DB    │  │
 │   └─────────┘         │   Link Management)   │         │  (Postgres) │  │
 │                        │                      │         └─────────────┘  │
@@ -86,7 +86,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    LINKBIO — CONTAINER DIAGRAM                       │
+│                  ATHLETE OS — CONTAINER DIAGRAM                      │
 │                                                                      │
 │  Browser                                                             │
 │  ┌───────────────────────────────────────────────────────────┐      │
@@ -701,12 +701,12 @@ See [`docs/adr/`](./docs/adr/) for full ADR history.
 
 ---
 
-## 12. Roadmap: LinkBio → Athlete OS
+## 12. Roadmap: MVP → Full Platform
 
 ### Phase Evolution
 
 ```
-Phase 1 (Now): LinkBio MVP
+Phase 1 (Now): Athlete OS MVP
 ─────────────────────────────────────────────────────────
 • Profile + link management
 • Auth (email + Google)

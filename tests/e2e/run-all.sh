@@ -2,21 +2,18 @@
 set -e
 
 echo "========================================"
-echo "  Link-in-Bio E2E Test Suite"
+echo "  Athlete OS E2E Test Suite"
 echo "========================================"
 echo ""
 
-# Ensure dev server is running
 if ! curl -s http://localhost:3000 > /dev/null 2>&1; then
   echo "ERROR: Dev server not running at http://localhost:3000"
   echo "Start it with: npm run dev"
   exit 1
 fi
 
-# Create screenshots directory
 mkdir -p tests/e2e/screenshots
 
-# Track results
 PASSED=0
 FAILED=0
 TESTS=()
@@ -37,14 +34,12 @@ run_test() {
   fi
 }
 
-# Run tests in order
 run_test "Signup Flow" "tests/e2e/signup.sh"
 run_test "Login Flow" "tests/e2e/login.sh"
 run_test "Profile Editing" "tests/e2e/editor.sh"
 run_test "Link CRUD" "tests/e2e/links.sh"
 run_test "Drag-and-Drop Reorder" "tests/e2e/reorder.sh"
 
-# Summary
 echo ""
 echo "========================================"
 echo "  Results: $PASSED passed, $FAILED failed"

@@ -1,142 +1,196 @@
-# Product Requirements Document: Link-in-Bio Page Builder
+# PRD: The Athlete OS — Unified Athlete Career Platform
+
+**Version:** 1.0
+**Date:** February 28, 2026
+**Status:** Draft
+
+---
 
 ## 1. Executive Summary
 
-Link-in-Bio Page Builder is a self-hosted, multi-user Linktree alternative that enables users to create a personal landing page with their name, bio, avatar, and a curated list of links. Users select from layout-varying visual themes, receive a shareable public URL based on their chosen slug (e.g., `/cole`), and access a dedicated analytics dashboard tracking clicks per link over time.
+The Athlete OS is a three-sided AI-powered marketplace that unifies the fragmented athlete career management experience into a single platform. Today's college and high school athletes navigate 5–7 disconnected tools — Hudl for video, NCSA for recruiting, Opendorse for NIL, a private attorney for contracts, and a freelance editor for highlights — with zero cross-module intelligence connecting them. The Athlete OS replaces this patchwork with five agentic modules: NIL Matchmaker, Combine Optimizer, Recruiter's Shadow, Contract Guard, and Highlight Architect.
 
-The application is built as a full-stack Next.js app deployed on Vercel, backed by Neon serverless Postgres with Neon Auth for authentication. The editor features a live preview with side-by-side layout on desktop and a toggle mode on mobile, with full drag-and-drop link reordering. Public pages are server-rendered for optimal SEO and social sharing.
+The platform mirrors Handshake's proven three-sided marketplace architecture: athletes use the core platform for free, athletic departments and schools pay B2B SaaS fees ($5,000–$75,000/year), and brands pay marketplace fees (10–15%) on brokered NIL deals. The differentiated acquisition wedge is a **parent dashboard** — a product with zero direct competition that serves the $40B+ annual decision-maker, driving bottom-up institutional adoption in the same way Hudl penetrated high schools through coach adoption.
 
-**MVP Goal:** Deliver a fully functional, production-ready link-in-bio platform across 4 sequential phases — from profile editing through theming, public URLs with SEO, and click analytics — with comprehensive E2E testing validating every user journey.
+The MVP targets NCAA college athletes and high school athletes in the five highest-density NIL states (California, Florida, New York/New Jersey, Illinois, North Carolina), focusing on the Contract Guard and NIL Matchmaker modules as the highest-urgency, most defensible entry points given the post-House v. NCAA regulatory environment.
+
+**MVP Goal:** Launch a web application with Contract Guard (AI-powered NIL contract review) and NIL Matchmaker (brand-athlete matching) for 500+ beta athletes within 90 days, with parent dashboard and Highlight Architect following in Phase 2.
 
 ---
 
 ## 2. Mission
 
-**Mission Statement:** Provide creators and professionals with a beautiful, self-hosted link-in-bio page they fully control — no vendor lock-in, no premium paywalls for basic features, and complete ownership of their data and analytics.
+**Mission Statement:** Democratize access to the tools, intelligence, and connections that determine athletic career outcomes — regardless of an athlete's zip code, family income, or institutional resources.
 
 **Core Principles:**
 
-1. **Simplicity first** — The editor should be intuitive enough that a user can create and publish their page in under 2 minutes.
-2. **Visual quality** — Public pages should look polished and professional out of the box, rivaling paid alternatives.
-3. **Performance** — Server-rendered public pages load fast, score well on Lighthouse, and render correctly for social media crawlers.
-4. **Self-service** — No admin intervention needed. Users sign up, build, publish, and track analytics independently.
-5. **Test-driven confidence** — Every user journey is validated with E2E tests using agent-browser. No feature ships without comprehensive test coverage.
+1. **Athlete-first, always.** Every feature is designed for the athlete's benefit, not the institution's oversight or the agent's commission.
+2. **AI that acts, not just informs.** Agentic automation handles multi-step workflows so athletes spend time competing, not managing paperwork.
+3. **Equity as architecture.** The platform is designed from the ground up to eliminate the $4x wealth disparity in recruiting outcomes by making elite-level tools free at the base tier.
+4. **Compliance is a moat.** Deep regulatory integration (NIL Go, FERPA, COPPA, state-by-state NIL rules) transforms legal complexity into a competitive barrier.
+5. **Data compounds.** Longitudinal athlete data from age 14–22 creates precision that no competitor can replicate retroactively.
 
 ---
 
 ## 3. Target Users
 
-### Primary Persona: Content Creators & Professionals
+### Primary Persona 1: The College Athlete (Core User)
+- **Profile:** 18–22 year old NCAA athlete (any division), 554,298 total addressable
+- **Technical comfort:** Moderate — heavy TikTok/Instagram user, comfortable with mobile apps, less comfortable with desktop SaaS
+- **Key pain points:**
+  - 97% have no NIL deal despite legal eligibility
+  - Cannot afford $250–$500/hr sports attorney to review contracts
+  - Must "self-recruit" in transfer portal with no matching intelligence
+  - No single profile that follows them across their career
+- **Goals:** Maximize NIL earnings, protect themselves from predatory contracts, find the right program if transferring
 
-- **Who:** Social media creators, freelancers, small business owners, developers, designers — anyone who needs a single link to share across platforms.
-- **Technical comfort:** Low to medium. They can fill out forms and pick themes but shouldn't need to write code or manage infrastructure.
-- **Key needs:**
-  - A single URL to put in their Instagram/TikTok/Twitter bio
-  - A page that looks professional without design skills
-  - Knowing which links get clicked and when
-  - Ability to quickly update links as their content/projects change
+### Primary Persona 2: The High School Athlete (Growth User)
+- **Profile:** 14–18 year old HS athlete in a NIL-permitting state, 8.26M total addressable
+- **Technical comfort:** High — digital native, creates content natively
+- **Key pain points:**
+  - Spends $5,000–$15,000+ on fragmented recruiting services over 4 years
+  - Has no professional highlight reel without paying $150–$2,000
+  - Parents manage recruiting logistics with no unified dashboard
+  - 98% must self-recruit; only 7% make a college roster
+- **Goals:** Get recruited to the right college program, maximize scholarship opportunities, build a professional-grade profile
 
-### Secondary Persona: Self-Hosters / Developers
+### Primary Persona 3: The Sports Parent (Acquisition Wedge)
+- **Profile:** Parent of athlete aged 12–18, invests 3hr 23min/sports day on logistics
+- **Technical comfort:** Moderate — uses apps, email, Google Sheets for tracking
+- **Key pain points:**
+  - No unified dashboard for recruiting timelines, NIL opportunities, eligibility tracking
+  - Spends $40B+ annually on fragmented youth sports services
+  - Primary purchasing decision-maker but no product is built for them
+  - Vulnerable to high-pressure NCSA-style phone sales ($1,320–$4,200 packages)
+- **Goals:** Understand their child's recruiting landscape, manage compliance, make informed financial decisions about sports investment
 
-- **Who:** Developers who want to run their own Linktree alternative rather than depend on a SaaS.
-- **Technical comfort:** High. They'll deploy to Vercel, configure Neon, and potentially customize themes.
-- **Key needs:**
-  - Full data ownership
-  - Open-source codebase they can fork and extend
-  - Clean, well-structured code they can understand and modify
+### Primary Persona 4: The College Coach (B2B Monetization)
+- **Profile:** NCAA coach, works 75 hrs/week, 7+ hours on recruiting
+- **Technical comfort:** High for video tools (Hudl), moderate for data platforms
+- **Key pain points:**
+  - Receives thousands of videos weekly, watches only first 3–5 min of each
+  - Has no way to find athletes at events and capture contact info efficiently
+  - Manages transfer portal and high school pipelines simultaneously
+  - Post-House compliance burden requires entirely new staff positions
+- **Goals:** Find the right athletes faster, manage roster caps intelligently, reduce compliance overhead
+
+### Primary Persona 5: The Brand/Sponsor (Revenue Side)
+- **Profile:** Local/regional business or national brand seeking NIL athlete partnerships
+- **Technical comfort:** Moderate — uses standard marketing tools
+- **Key pain points:**
+  - Only ~2,000 companies actively seek NIL deals against 180,000+ D1 athletes
+  - Cannot evaluate athlete audience demographics or compliance readiness
+  - Opendorse and MarketPryce have sparse active campaigns (212 active, only 35 >$750)
+- **Goals:** Find authentic athlete partners that match their geography/demographics, execute compliant deals efficiently
 
 ---
 
 ## 4. MVP Scope
 
-### In Scope
+### Core Functionality
 
-**Core Functionality:**
-- ✅ User registration with username/slug selection
-- ✅ Email/password authentication
-- ✅ Google OAuth authentication
-- ✅ Profile editor (name, bio, avatar URL)
-- ✅ Link management (add, remove, reorder via drag-and-drop)
-- ✅ Header and divider items between links
-- ✅ Live preview alongside editor
-- ✅ 4 layout-varying themes with instant preview
-- ✅ Slug-based public pages (`/<username>`)
-- ✅ OG meta tags for social sharing
-- ✅ Click tracking per link with timestamps
-- ✅ Analytics dashboard with click counts and time-series charts
-- ✅ Marketing landing page at `/`
+**In Scope (MVP):**
+- ✅ Athlete onboarding flow with sport, position, school, eligibility status
+- ✅ **Contract Guard** — AI-powered NIL contract review with clause flagging (predatory terms, perpetuity clauses, buyout penalties, exclusivity traps)
+- ✅ **NIL Matchmaker** — brand-athlete matching based on sport, geography, audience demographics, compliance status
+- ✅ **Parent Dashboard** — unified view of recruiting timeline, NIL opportunities, eligibility tracking
+- ✅ Athlete public profile with basic stats and social links
+- ✅ Brand/sponsor onboarding and campaign creation
+- ✅ Free tier (basic profile, limited matches) and Pro tier ($29.99/mo)
+- ✅ State-by-state NIL eligibility rule engine (42 states + D.C.)
+- ✅ NIL deal submission to NIL Go clearinghouse (for D1 athletes)
+- ✅ Email notifications for matches and contract review results
 
-**Technical:**
-- ✅ Server-side rendering for public pages
-- ✅ Responsive design (mobile-first)
-- ✅ TypeScript strict mode throughout
-- ✅ Biome for linting and formatting
-- ✅ Vitest for unit testing
-- ✅ agent-browser for E2E testing of all user journeys
-- ✅ Basic rate limiting on API routes
-- ✅ Explicit save button (no auto-save)
+**Out of Scope (MVP):**
+- ❌ Combine Optimizer (Phase 2)
+- ❌ Recruiter's Shadow / transfer portal matching (Phase 2)
+- ❌ Highlight Architect / AI video production (Phase 2)
+- ❌ Coach/institutional B2B dashboard (Phase 3)
+- ❌ Mobile native apps (iOS/Android) — web-first only
+- ❌ Data licensing marketplace (Phase 4)
+- ❌ Financial planning / tax documentation tools (Phase 3)
+- ❌ Direct messaging between athletes and coaches (Phase 3)
+- ❌ Wearable data integrations (Phase 3)
 
-**Deployment:**
-- ✅ Vercel deployment
-- ✅ Neon serverless Postgres
-- ✅ Neon Auth integration
-- ✅ Environment-based configuration
+### Technical
 
-### Out of Scope
+**In Scope (MVP):**
+- ✅ Next.js 14 web application (App Router)
+- ✅ Supabase for auth, database, and storage
+- ✅ Claude claude-sonnet-4-6 for contract analysis and matching intelligence
+- ✅ Stripe for subscription billing
+- ✅ Vercel deployment with Analytics and Speed Insights
+- ✅ Railway for backend services / API
+- ✅ FERPA-compliant data handling (school-linked athlete data)
+- ✅ COPPA-compliant parental consent flow (users under 13)
 
-- ❌ Admin panel / moderation tools
-- ❌ File upload for avatars (URL-only for MVP)
-- ❌ Custom domains per user
-- ❌ Embed support (YouTube, Spotify, etc.)
-- ❌ Monetization features (tipping, paid links)
-- ❌ Email notifications / transactional emails
-- ❌ Auto-save / draft vs published states
-- ❌ Link scheduling (show/hide by date)
-- ❌ Geographic analytics (IP-based location data)
-- ❌ Referrer tracking
-- ❌ Custom CSS / theme editor per user
-- ❌ Team/organization accounts
-- ❌ API access for third-party integrations
-- ❌ Mobile app
-- ❌ Bot protection beyond basic rate limiting
+**Out of Scope (MVP):**
+- ❌ Real-time collaboration features
+- ❌ Self-hosted LLM inference
+- ❌ Custom video processing pipeline
+- ❌ Native mobile apps
+
+### Integration
+
+**In Scope (MVP):**
+- ✅ NIL Go clearinghouse API (deal submission/status)
+- ✅ Stripe payment processing
+- ✅ Vercel Analytics
+
+**Out of Scope (MVP):**
+- ❌ Hudl API integration
+- ❌ NCAA Eligibility Center API
+- ❌ Twitter/X, TikTok, Instagram API (social proof/audience data) — manual entry only in MVP
+- ❌ NCSA / FieldLevel data imports
 
 ---
 
 ## 5. User Stories
 
-### Registration & Authentication
+### Athletes
 
-**US-1:** As a new user, I want to sign up with my email and choose a unique username, so that I get a personal URL like `/cole` for my link page.
-> *Example: User visits `/`, clicks "Get Started", enters name, email, password, and desired slug `cole`. System checks slug availability in real-time. On success, user lands on the editor.*
+**Story 1: Contract Review**
+> As a college athlete, I want to upload an NIL contract and receive a plain-English analysis of risky clauses, so that I can protect myself from predatory terms without paying $500–$1,500 for an attorney.
 
-**US-2:** As a returning user, I want to log in with my email/password or Google account, so that I can quickly access my editor.
-> *Example: User clicks "Sign In", chooses "Continue with Google", authenticates via OAuth, and is redirected to their editor dashboard.*
+*Example:* A freshman quarterback receives a "lifetime marketing agreement" from a local collective agent. She uploads the PDF, and Contract Guard flags the 15% lifetime commission clause, the perpetuity term, and the absence of a buyout clause — presenting each as a red-flag card with plain-English explanation and recommended action.
 
-### Profile Editing
+**Story 2: NIL Deal Discovery**
+> As a college athlete, I want to see brand partnerships matched to my sport, location, and social audience, so that I can monetize my NIL without waiting to be discovered.
 
-**US-3:** As a logged-in user, I want to edit my name, bio, and avatar URL with a live preview, so that I can see exactly how my page will look before saving.
-> *Example: User types in the bio field "Designer & coffee enthusiast" and the preview panel on the right instantly updates to show the new bio text.*
+*Example:* A D2 swimmer in Chicago receives three matched campaigns from local fitness brands, a regional sports nutrition company, and a national athletic apparel brand — all pre-screened for her school's NIL policy compliance.
 
-**US-4:** As a logged-in user, I want to add, remove, and reorder links using drag-and-drop, so that I can organize my page the way I want.
-> *Example: User has 5 links. They grab the drag handle on "My Portfolio" and drag it from position 4 to position 1. The preview updates immediately. They click "Save" to persist the change.*
+**Story 3: NIL Deal Submission**
+> As a D1 college athlete, I want the platform to automatically submit my accepted NIL deal to the NIL Go clearinghouse, so that I stay compliant without managing the 5-business-day deadline manually.
 
-**US-5:** As a logged-in user, I want to add section headers and dividers between my links, so that I can visually group related links.
-> *Example: User adds a header "Social Media" above their Twitter and Instagram links, and a divider before their "Projects" section.*
+**Story 4: Eligibility Awareness**
+> As a high school athlete in Texas, I want to understand exactly what NIL activities are permitted in my state, so that I don't inadvertently jeopardize my eligibility.
 
-### Themes
+*Example:* The platform displays a Texas-specific eligibility card: "Deferred-payment only. Must be a senior aged 17+. No school branding permitted. Payments received only after graduation."
 
-**US-6:** As a logged-in user, I want to pick from 4 visual themes and see the result instantly in the preview, so that I can choose the look that best represents me.
-> *Example: User clicks the "Colorful" theme thumbnail. The preview immediately switches to a vibrant gradient background with rounded, colorful link buttons. They try "Professional" next — the preview shifts to a clean, muted layout with serif typography.*
+**Story 5: Profile Building**
+> As a high school athlete, I want to build a recruiting profile that showcases my stats, academic record, and contact information, so that college coaches can find and evaluate me.
 
-### Public Pages
+### Parents
 
-**US-7:** As a visitor, I want to view someone's link page at their public URL and click their links, so that I can find their content.
-> *Example: Visitor opens `example.com/cole` in their browser. They see Cole's avatar, bio, and list of links rendered with the "Dark" theme. They click "My YouTube Channel" and are redirected to YouTube.*
+**Story 6: Recruiting Dashboard**
+> As a sports parent, I want a unified dashboard showing my child's recruiting timeline, upcoming deadlines, and active NIL opportunities, so that I can manage their career without juggling 5 different tools.
 
-### Analytics
+*Example:* Parent sees a timeline view: "NCAA Contact Period opens April 15 → Official Visit window → Signing Day." Alongside, a compliance checklist shows which state NIL rules apply and what documents need to be filed.
 
-**US-8:** As a logged-in user, I want to see how many times each of my links has been clicked and view click trends over time, so that I can understand what content resonates with my audience.
-> *Example: User navigates to their analytics dashboard. They see a bar chart showing "YouTube: 342 clicks, Portfolio: 128 clicks, Twitter: 89 clicks" and a line chart showing daily clicks over the past 30 days.*
+**Story 7: Financial Transparency**
+> As a sports parent, I want to see all NIL deals and their terms in one place, so that I understand my child's earnings and tax obligations before they become problems.
+
+### Brands
+
+**Story 8: Athlete Discovery**
+> As a local business owner, I want to find college athletes in my city who align with my brand values and have relevant social audiences, so that I can create authentic NIL partnerships without a marketing agency.
+
+*Example:* A Charlotte-based car dealership searches for athletes within 25 miles who play revenue sports, have 1,000+ Instagram followers, and whose school NIL policy allows automotive sponsorships — and receives 12 matched profiles with estimated engagement rates.
+
+### Technical
+
+**Story 9: Compliance Automation**
+> As the platform, I need to enforce state-by-state NIL eligibility rules at the point of deal creation, so that no athlete inadvertently signs a non-compliant deal through our platform.
 
 ---
 
@@ -146,661 +200,509 @@ The application is built as a full-stack Next.js app deployed on Vercel, backed 
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                        Vercel                           │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │                   Next.js App                     │  │
-│  │                                                   │  │
-│  │  ┌─────────────┐  ┌──────────┐  ┌─────────────┐  │  │
-│  │  │  SSR Public  │  │   API    │  │  SPA Editor  │  │  │
-│  │  │   Pages      │  │  Routes  │  │  + Dashboard │  │  │
-│  │  │  /<slug>     │  │ /api/*   │  │  /editor     │  │  │
-│  │  └─────────────┘  └──────────┘  └─────────────┘  │  │
-│  │                        │                          │  │
-│  └────────────────────────┼──────────────────────────┘  │
-│                           │                             │
-└───────────────────────────┼─────────────────────────────┘
-                            │
-                  ┌─────────┴─────────┐
-                  │   Neon Postgres   │
-                  │  + Neon Auth      │
-                  │  (Serverless)     │
-                  └───────────────────┘
+│                    Next.js Frontend                      │
+│              (App Router, React Server Components)       │
+├──────────────┬──────────────┬──────────────┬────────────┤
+│  Athlete     │   Parent     │   Brand      │   Admin    │
+│  Dashboard   │   Dashboard  │   Portal     │   Panel    │
+└──────────────┴──────────────┴──────────────┴────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │   API Layer       │
+                    │  (Next.js API     │
+                    │   Routes +        │
+                    │   Railway BFF)    │
+                    └─────────┬─────────┘
+          ┌──────────┬────────┴────────┬──────────┐
+          │          │                 │          │
+     ┌────┴───┐ ┌────┴───┐       ┌────┴───┐ ┌────┴────┐
+     │Supabase│ │ Claude │       │ Stripe │ │NIL Go  │
+     │  DB +  │ │  API   │       │  API   │ │ API    │
+     │  Auth  │ │(claude-│       │        │ │        │
+     │        │ │sonnet- │       │        │ │        │
+     └────────┘ │ 4-6)   │       └────────┘ └────────┘
+                └────────┘
 ```
 
 ### Directory Structure
 
 ```
-link-in-bio-page-builder/
-├── src/
-│   ├── app/                          # Next.js App Router
-│   │   ├── (marketing)/              # Marketing/landing route group
-│   │   │   └── page.tsx              # Landing page at /
-│   │   ├── (auth)/                   # Auth route group
-│   │   │   ├── login/page.tsx
-│   │   │   └── signup/page.tsx
-│   │   ├── (dashboard)/              # Authenticated route group
-│   │   │   ├── editor/page.tsx       # Profile editor + live preview
-│   │   │   ├── analytics/page.tsx    # Analytics dashboard
-│   │   │   └── settings/page.tsx     # Account settings (slug change, etc.)
-│   │   ├── [slug]/page.tsx           # Public profile pages (SSR)
-│   │   ├── api/
-│   │   │   ├── auth/[...all]/route.ts  # Neon Auth handlers
-│   │   │   ├── profile/route.ts      # Profile CRUD
-│   │   │   ├── links/route.ts        # Link management
-│   │   │   ├── links/reorder/route.ts
-│   │   │   ├── click/route.ts        # Click tracking endpoint
-│   │   │   └── analytics/route.ts    # Analytics data
-│   │   ├── layout.tsx                # Root layout
-│   │   └── globals.css
-│   ├── components/
-│   │   ├── ui/                       # shadcn/ui components
-│   │   ├── editor/                   # Editor-specific components
-│   │   │   ├── profile-form.tsx
-│   │   │   ├── link-list.tsx
-│   │   │   ├── link-item.tsx
-│   │   │   ├── add-link-dialog.tsx
-│   │   │   └── theme-picker.tsx
-│   │   ├── preview/                  # Live preview components
-│   │   │   └── preview-panel.tsx
-│   │   ├── themes/                   # Theme layout components
-│   │   │   ├── minimal.tsx
-│   │   │   ├── dark.tsx
-│   │   │   ├── colorful.tsx
-│   │   │   └── professional.tsx
-│   │   ├── analytics/                # Analytics components
-│   │   │   ├── click-chart.tsx
-│   │   │   ├── top-links.tsx
-│   │   │   └── time-series.tsx
-│   │   └── marketing/                # Landing page components
-│   │       ├── hero.tsx
-│   │       └── features.tsx
-│   ├── lib/
-│   │   ├── auth.ts                   # Neon Auth server instance
-│   │   ├── db/
-│   │   │   ├── index.ts              # Drizzle client
-│   │   │   ├── schema.ts             # Drizzle schema definitions
-│   │   │   └── migrations/           # Drizzle migrations
-│   │   ├── rate-limit.ts             # Rate limiting utility
-│   │   └── utils.ts                  # Shared utilities
-│   ├── hooks/                        # Custom React hooks
-│   │   ├── use-profile.ts
-│   │   └── use-analytics.ts
-│   └── types/                        # Shared TypeScript types
-│       └── index.ts
-├── tests/
-│   ├── unit/                         # Vitest unit tests
-│   │   ├── lib/
-│   │   └── components/
-│   └── e2e/                          # agent-browser E2E tests
-│       ├── auth.test.ts
-│       ├── editor.test.ts
-│       ├── public-page.test.ts
-│       └── analytics.test.ts
-├── public/                           # Static assets
-├── drizzle.config.ts                 # Drizzle configuration
-├── biome.json                        # Biome linter/formatter config
-├── next.config.ts                    # Next.js configuration
-├── tailwind.config.ts
-├── tsconfig.json
-├── vitest.config.ts
-└── package.json
+athlete-os/
+├── app/                          # Next.js App Router
+│   ├── (auth)/                   # Auth group (login, signup, onboarding)
+│   ├── (athlete)/                # Athlete-facing routes
+│   │   ├── dashboard/
+│   │   ├── contracts/            # Contract Guard module
+│   │   ├── deals/                # NIL Matchmaker module
+│   │   └── profile/
+│   ├── (parent)/                 # Parent dashboard routes
+│   ├── (brand)/                  # Brand portal routes
+│   ├── api/                      # API routes
+│   │   ├── ai/                   # AI agent endpoints
+│   │   │   ├── contract-review/
+│   │   │   └── nil-match/
+│   │   ├── deals/
+│   │   ├── clearinghouse/        # NIL Go integration
+│   │   └── webhooks/             # Stripe webhooks
+│   └── layout.tsx
+├── components/
+│   ├── ui/                       # shadcn/ui base components
+│   ├── athlete/                  # Athlete-specific components
+│   ├── parent/                   # Parent dashboard components
+│   ├── brand/                    # Brand portal components
+│   └── shared/                   # Cross-cutting components
+├── lib/
+│   ├── ai/                       # Claude agent orchestration
+│   │   ├── contract-agent.ts
+│   │   └── matching-agent.ts
+│   ├── compliance/               # State NIL rule engine
+│   ├── supabase/                 # DB client + queries
+│   └── stripe/                   # Billing utilities
+├── types/                        # TypeScript interfaces
+└── middleware.ts                 # Auth + route protection
 ```
 
 ### Key Design Patterns
 
-1. **Route Groups** — Use Next.js route groups `(marketing)`, `(auth)`, `(dashboard)` to organize layouts without affecting URL structure.
-2. **Server Components by default** — All pages and layouts are React Server Components unless they need interactivity. Client Components are used only in the editor, theme picker, and analytics charts.
-3. **Server Actions for mutations** — Use Next.js Server Actions for profile saves, link CRUD, and settings changes. API routes for click tracking (called from public pages) and analytics data fetching.
-4. **Optimistic UI** — The editor preview updates instantly on the client; the save button persists to the database.
-5. **SSR for public pages** — The `[slug]` dynamic route fetches profile data server-side and renders the full HTML with OG meta tags.
+- **Server Components by default** — minimize client JS bundle; use Client Components only for interactive UI
+- **AI Agent pattern** — each module (Contract Guard, NIL Matchmaker) is a discrete agent with defined tools, system prompts, and structured output schemas
+- **Compliance middleware** — state NIL rule engine runs as middleware on all deal-creation paths, not as an afterthought
+- **Row-level security** — Supabase RLS policies enforce that athletes only see their own data, parents only see linked athlete data, brands only see their own campaigns
+- **Optimistic UI** — contract uploads and match requests show immediate feedback while AI processing happens server-side
 
 ---
 
-## 7. Features
+## 7. Tools / Features
 
-### 7.1 Marketing Landing Page
+### Module 1: Contract Guard
 
-**Route:** `/`
+**Purpose:** Eliminate predatory NIL contracts through AI-powered review accessible at zero marginal cost to athletes.
 
-A public homepage that explains the product and drives signups.
+**Workflow:**
+1. Athlete uploads PDF/DOCX or pastes contract text
+2. Claude parses contract and extracts key clauses
+3. AI evaluates each clause against a risk taxonomy
+4. Returns structured report with flagged clauses, risk ratings, and plain-English explanations
+5. Recommends action: "Accept," "Negotiate," or "Reject / Seek Attorney"
 
-- Hero section with tagline, description, and CTA buttons ("Get Started" / "Sign In")
-- Brief feature highlights (themes, analytics, custom URL)
-- Example preview showing what a link page looks like
-- Footer with minimal links
-
-### 7.2 Authentication
-
-**Routes:** `/login`, `/signup`
-
-Powered by Neon Auth (built on Better Auth).
-
-- **Signup flow:**
-  1. User enters display name, email, password, and desired username/slug
-  2. Real-time slug availability check (debounced API call)
-  3. Slug validation: lowercase alphanumeric + hyphens, 3-30 characters, no reserved words
-  4. On success → redirect to `/editor`
-- **Login flow:**
-  1. Email/password form OR "Continue with Google" button
-  2. On success → redirect to `/editor`
-- **Reserved slugs:** `login`, `signup`, `editor`, `analytics`, `settings`, `api`, `admin`, `about`, `help`, etc.
-
-### 7.3 Profile Editor + Live Preview
-
-**Route:** `/editor`
-
-The core editing experience for building a link page.
-
-**Editor Panel (left side on desktop):**
-- **Profile section:**
-  - Display name (text input, max 50 chars)
-  - Bio (textarea, max 160 chars, with character counter)
-  - Avatar URL (text input with URL validation, small preview thumbnail)
-- **Links section:**
-  - List of current links with drag handles (dnd-kit)
-  - Each link item shows: drag handle, title, URL, delete button
-  - "Add Link" button opens inline form (title + URL fields)
-  - "Add Header" button adds a text header item
-  - "Add Divider" button adds a visual divider item
-  - Items are sortable via drag-and-drop
-- **Save button** at the bottom — disabled when no changes, shows loading state during save, success/error feedback via toast notification
-
-**Preview Panel (right side on desktop):**
-- Renders the public page exactly as it will appear
-- Updates in real-time as the user types/reorders (client-side state, not DB)
-- Displayed inside a phone-frame mockup for context
-- Shows the currently selected theme
-
-**Layout Modes:**
-- **Desktop (≥1024px):** Side-by-side with resizable panels. Toggle buttons in toolbar to: show both panels, show editor only, show preview only.
-- **Mobile (<1024px):** Tab toggle between "Edit" and "Preview" views.
-
-### 7.4 Theme System
-
-**Accessible from:** Theme picker in the editor (above or within the editor panel)
-
-4 themes that vary in both visual style and layout structure:
-
-| Theme | Vibe | Layout Notes |
+**Risk Taxonomy (MVP):**
+| Risk Category | Example Clause | Severity |
 |---|---|---|
-| **Minimal** | Clean, white/light gray, sans-serif, lots of whitespace | Centered single-column, simple rectangular link buttons, small avatar |
-| **Dark** | Dark backgrounds, light text, neon/accent colors, modern feel | Centered column, rounded pill-shaped link buttons, larger avatar with glow effect |
-| **Colorful** | Vibrant gradients, playful, rounded shapes, bold typography | Wider card-based links, avatar with colored border ring, gradient background |
-| **Professional** | Muted tones, serif headings, structured, business-card feel | Two-column layout on desktop (avatar/bio left, links right), subtle shadows, traditional buttons |
+| Perpetuity | "in perpetuity throughout the universe" | 🔴 Critical |
+| Excessive commission | >10% of earnings | 🔴 Critical |
+| Lifetime marketing agreement | multi-year/career-length exclusivity | 🔴 Critical |
+| Missing buyout clause | no exit terms defined | 🟡 High |
+| Broad exclusivity | prevents all competing brand deals | 🟡 High |
+| Liquidated damages | >$50,000 penalty for transfer | 🟡 High |
+| Missing payment terms | no payment schedule defined | 🟠 Medium |
+| IP rights overcapture | athlete loses content rights | 🟠 Medium |
 
-**Theme Picker UI:**
-- Horizontal row of theme thumbnail cards
-- Clicking a theme instantly updates the preview panel
-- Selected theme is visually highlighted
-- Theme selection is saved with the profile
+**Key Features:**
+- Structured JSON output from Claude with clause locations, risk ratings, explanations
+- "Attorney review recommended" flag for contracts above a risk threshold
+- Disclaimer: "Informational only — not legal advice"
+- Contract history stored per athlete
+- Shareable report link (for sharing with parent/advisor)
 
-### 7.5 Public Pages + SEO
+### Module 2: NIL Matchmaker
 
-**Route:** `/[slug]` (dynamic, server-rendered)
+**Purpose:** Connect the 97% of undermonetized athletes with brands actively seeking NIL partnerships, prioritizing local businesses as the largest untapped demand source.
 
-- Fetches user profile, links, and theme from the database at request time
-- Renders the full page server-side with the selected theme component
-- Injects OG meta tags into `<head>`:
-  - `og:title` → User's display name
-  - `og:description` → User's bio
-  - `og:image` → User's avatar URL (or a generated fallback)
-  - `og:url` → Full canonical URL
-  - `twitter:card` → `summary`
-- Each link is a clickable `<a>` tag that:
-  1. Fires a click-tracking request to `/api/click` (via `navigator.sendBeacon` or fetch)
-  2. Then navigates to the target URL
-- Returns 404 for non-existent slugs with a friendly "Page not found" message
+**Athlete-side workflow:**
+1. Athlete completes NIL profile: sport, position, school, state, social handles + follower counts (manual entry MVP)
+2. Platform calculates estimated NIL valuation (based on sport, division, follower count, engagement)
+3. Athlete browses matched brand campaigns or receives proactive match notifications
+4. Athlete applies to campaign → brand reviews → deal terms shared via platform
 
-### 7.6 Click Analytics
+**Brand-side workflow:**
+1. Brand creates account and campaign: product category, budget, geography, sport preferences, audience requirements
+2. Platform surfaces matching athlete profiles ranked by fit score
+3. Brand reaches out or approves athlete applications
+4. Both parties agree to deal terms within platform
+5. Platform generates deal summary for NIL Go clearinghouse submission (D1 athletes)
 
-**Tracking endpoint:** `POST /api/click`
+**Matching Algorithm (MVP — rule-based + Claude scoring):**
+- Hard filters: geography (school within X miles of brand), sport/category compatibility, state NIL eligibility, school NIL policy compliance
+- Soft scoring: audience size, engagement rate, brand-athlete value alignment (via Claude)
+- Output: ranked list with match score and reason
 
-- Accepts: `{ linkId: string }`
-- Records: link ID, timestamp, (IP hash for rate limiting — not stored for analytics)
-- Rate limited: max 1 click per link per IP per 10 seconds (prevent spam)
+**Key Features:**
+- Campaign dashboard for brands (active campaigns, applicants, deal status)
+- Match feed for athletes with notification preferences
+- Deal status tracking (Offered → Under Review → Accepted → Submitted to Clearinghouse)
+- Automated NIL Go submission for D1 deals >$600
 
-**Dashboard route:** `/analytics`
+### Module 3: Parent Dashboard
 
-- **Summary cards:** Total clicks (all time), clicks this week, number of active links
-- **Top links table:** Ranked list of links by total clicks, showing title, URL, click count
-- **Time-series chart:** Line chart showing total clicks per day over the last 30 days
-  - Toggle between 7-day / 30-day / 90-day views
-  - Uses a lightweight chart library (e.g., Recharts, which works well with shadcn)
-- **Per-link breakdown:** Expandable rows in the top links table showing that link's daily clicks
+**Purpose:** Create the platform's primary acquisition wedge by serving the $40B+ decision-maker with zero direct competition.
+
+**Key Features:**
+- Linked athlete profiles (parent can monitor multiple children)
+- Recruiting timeline view with NCAA calendar milestones
+- State NIL eligibility summary for the athlete's state
+- Active deals and contract review history
+- Academic eligibility tracker (GPA/credit thresholds — manual entry MVP)
+- NIL earnings summary (for tax awareness)
+- Notification preferences (email alerts for new matches, contract submissions, deadline reminders)
 
 ---
 
 ## 8. Technology Stack
 
-### Core Framework
+### Frontend
 | Technology | Version | Purpose |
 |---|---|---|
-| **Next.js** | 15.x | Full-stack React framework (App Router, SSR, API Routes) |
-| **React** | 19.x | UI library |
-| **TypeScript** | 5.x | Type safety (strict mode) |
+| Next.js | 15.x | Full-stack React framework (App Router) |
+| React | 19.x | UI library |
+| TypeScript | 5.x | Type safety |
+| Tailwind CSS | 4.x | Utility-first styling |
+| shadcn/ui | latest | Component library |
+| Framer Motion | 11.x | Animations |
+| Zustand | 5.x | Client state management |
+| React Hook Form | 7.x | Form handling |
+| Zod | 3.x | Schema validation |
 
-### Styling & UI
-| Technology | Purpose |
-|---|---|
-| **Tailwind CSS** 4.x | Utility-first CSS framework |
-| **shadcn/ui** | Accessible, customizable component library |
-| **CSS Transitions** | Animations (no extra motion libraries) |
+### Backend / Infrastructure
+| Technology | Version | Purpose |
+|---|---|---|
+| Supabase | hosted | Postgres DB, Auth, Storage, Realtime |
+| Railway | hosted | Backend services, background jobs |
+| Vercel | hosted | Frontend deployment, Edge Functions |
+| Stripe | latest | Subscription billing, webhooks |
 
-### Database & Auth
-| Technology | Purpose |
-|---|---|
-| **Neon** | Serverless Postgres (database hosting) |
-| **Neon Auth** | Managed authentication (Better Auth-based) |
-| **@neondatabase/auth** | Neon Auth SDK for Next.js |
-| **Drizzle ORM** | Type-safe database queries and migrations |
-| **drizzle-kit** | Schema migration tooling |
+### AI / Intelligence
+| Technology | Version | Purpose |
+|---|---|---|
+| Anthropic Claude | claude-sonnet-4-6 | Contract analysis, NIL matching intelligence |
+| Anthropic SDK | latest | API client with streaming support |
+| Vercel AI SDK | 4.x | AI streaming UI primitives |
 
-### Key Libraries
-| Library | Purpose |
-|---|---|
-| **@dnd-kit/core** + **@dnd-kit/sortable** | Drag-and-drop link reordering |
-| **Recharts** | Charts for analytics dashboard |
-| **zod** | Runtime schema validation (forms, API inputs) |
+### Key Dependencies
+```json
+{
+  "dependencies": {
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "@supabase/supabase-js": "^2.x",
+    "@supabase/ssr": "^0.x",
+    "@anthropic-ai/sdk": "^0.x",
+    "ai": "^4.x",
+    "stripe": "^17.x",
+    "@stripe/stripe-js": "^4.x",
+    "zod": "^3.x",
+    "react-hook-form": "^7.x",
+    "@hookform/resolvers": "^3.x",
+    "zustand": "^5.x",
+    "framer-motion": "^11.x",
+    "date-fns": "^3.x",
+    "pdf-parse": "^1.x",
+    "mammoth": "^1.x"
+  }
+}
+```
 
-### Dev Tooling
-| Tool | Purpose |
-|---|---|
-| **Biome** | Linting + formatting (replaces ESLint + Prettier) |
-| **Vitest** | Unit testing |
-| **agent-browser** | E2E testing (Playwright-based CLI) |
-
-### Deployment
-| Service | Purpose |
-|---|---|
-| **Vercel** | Hosting, CI/CD, edge functions |
-| **Neon** | Managed Postgres (serverless, auto-scaling) |
+### Optional Dependencies (Phase 2+)
+- `@vercel/analytics` — Vercel Analytics (installed via `/vercel-analytics` command)
+- `uploadthing` — file upload service for contract documents and highlight reels
+- `resend` — transactional email
+- `posthog-js` — product analytics / feature flags
 
 ---
 
 ## 9. Security & Configuration
 
-### Authentication & Authorization
-
-- **Neon Auth** handles all authentication flows:
-  - Email/password registration and login
-  - Google OAuth (using Neon Auth's built-in Google credentials for dev, custom credentials for production)
-  - Session management via signed cookies (cached for 5 minutes by default)
-- **Authorization:** Middleware protects `/editor`, `/analytics`, `/settings` routes — redirects to `/login` if unauthenticated
-- **Data isolation:** All queries filter by the authenticated user's ID. Users can only read/write their own profile and links.
-
-### Rate Limiting
-
-- **API routes:** Simple in-memory rate limiting (or Vercel KV if needed)
-  - `/api/click`: 60 requests/minute per IP
-  - `/api/profile`, `/api/links`: 30 requests/minute per user
-  - `/api/auth/*`: 10 requests/minute per IP (login/signup)
-- **Click deduplication:** Ignore duplicate clicks on the same link from the same IP within 10 seconds
+### Authentication / Authorization
+- **Provider:** Supabase Auth (email/password + Google OAuth)
+- **Role-based access:** `athlete`, `parent`, `brand`, `coach`, `admin`
+- **Parent-athlete linking:** verified via email invite flow; parent can only view linked athlete(s)
+- **Row-level security:** Supabase RLS policies on all tables — no athlete data accessible cross-account
+- **JWT expiry:** 1 hour access tokens, 30-day refresh tokens
 
 ### Configuration (Environment Variables)
-
 ```env
-# Neon Database
-DATABASE_URL=                    # Neon Postgres connection string
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
-# Neon Auth
-NEON_AUTH_BASE_URL=              # Neon Auth endpoint URL
-NEON_AUTH_COOKIE_SECRET=         # Secret for signing session cookies
+# Anthropic
+ANTHROPIC_API_KEY=
 
-# Google OAuth (production)
-GOOGLE_CLIENT_ID=                # Google OAuth client ID
-GOOGLE_CLIENT_SECRET=            # Google OAuth client secret
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+
+# NIL Go Clearinghouse
+NIL_GO_API_KEY=
+NIL_GO_API_URL=
 
 # App
-NEXT_PUBLIC_APP_URL=             # Public app URL (e.g., https://yourdomain.com)
+NEXT_PUBLIC_APP_URL=
 ```
 
 ### Security Scope
 
-**In scope:**
-- ✅ Input sanitization (XSS prevention on bio, link titles/URLs)
-- ✅ URL validation for links (must be valid HTTP/HTTPS URLs)
-- ✅ Slug validation (alphanumeric + hyphens only)
-- ✅ CSRF protection (built into Neon Auth / Next.js)
-- ✅ Rate limiting on all API endpoints
+**In Scope (MVP):**
+- ✅ Input sanitization on all user-submitted text
+- ✅ File type and size validation for contract uploads (PDF/DOCX, max 10MB)
+- ✅ Rate limiting on AI endpoints (contract review: 5/day free, 50/day Pro)
+- ✅ Stripe webhook signature verification
+- ✅ HTTPS-only (Vercel enforced)
+- ✅ FERPA: written data processing agreements required for any school-linked data
+- ✅ COPPA: age verification at signup; parental consent flow for under-13 users
+- ✅ Contract Guard disclaimer: "This analysis is informational only and does not constitute legal advice."
 
-**Out of scope for MVP:**
-- ❌ Content moderation / link scanning
-- ❌ Two-factor authentication
-- ❌ IP allowlisting
-- ❌ Advanced bot protection (CAPTCHA, etc.)
+**Out of Scope (MVP):**
+- ❌ SOC 2 compliance (Phase 3, required for institutional B2B contracts)
+- ❌ HIPAA (not applicable)
+- ❌ Penetration testing (schedule for pre-Series A)
 
----
-
-## 10. Database Schema
-
-### Tables
-
-```sql
--- Users table is managed by Neon Auth (neon_auth schema)
--- It provides: id, email, name, image, created_at, updated_at
-
--- Profiles (extends Neon Auth user)
-CREATE TABLE profiles (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL UNIQUE REFERENCES neon_auth.users(id) ON DELETE CASCADE,
-  slug          TEXT NOT NULL UNIQUE,
-  display_name  TEXT NOT NULL DEFAULT '',
-  bio           TEXT NOT NULL DEFAULT '',
-  avatar_url    TEXT NOT NULL DEFAULT '',
-  theme         TEXT NOT NULL DEFAULT 'minimal',
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE UNIQUE INDEX idx_profiles_slug ON profiles(slug);
-CREATE INDEX idx_profiles_user_id ON profiles(user_id);
-
--- Link items (links, headers, dividers)
-CREATE TABLE link_items (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  profile_id    UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  type          TEXT NOT NULL DEFAULT 'link',  -- 'link' | 'header' | 'divider'
-  title         TEXT NOT NULL DEFAULT '',
-  url           TEXT NOT NULL DEFAULT '',       -- empty for headers/dividers
-  sort_order    INTEGER NOT NULL DEFAULT 0,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_link_items_profile_id ON link_items(profile_id);
-
--- Click events
-CREATE TABLE click_events (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  link_item_id  UUID NOT NULL REFERENCES link_items(id) ON DELETE CASCADE,
-  clicked_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_click_events_link_item_id ON click_events(link_item_id);
-CREATE INDEX idx_click_events_clicked_at ON click_events(clicked_at);
-```
-
-### Drizzle Schema (TypeScript)
-
-The above SQL will be represented as Drizzle schema definitions in `src/lib/db/schema.ts`, using `pgTable`, with proper TypeScript types inferred via `InferSelectModel` and `InferInsertModel`.
+### AI Safety Guardrails
+- Contract Guard output always includes attorney referral for Critical-risk contracts
+- NIL matching enforces state eligibility rules as hard filters (not AI suggestions)
+- No AI-generated legal advice — all contract analysis framed as "risk identification"
 
 ---
 
-## 11. API Specification
+## 10. API Specification
 
-### Profile
+### Contract Review
 
-**GET `/api/profile`** — Get current user's profile
-- Auth: Required
-- Response: `{ profile: Profile, links: LinkItem[] }`
+**POST** `/api/ai/contract-review`
 
-**PUT `/api/profile`** — Update current user's profile
-- Auth: Required
-- Body: `{ displayName: string, bio: string, avatarUrl: string, theme: string }`
-- Validation: Zod schema
-- Response: `{ profile: Profile }`
-
-### Links
-
-**POST `/api/links`** — Add a new link item
-- Auth: Required
-- Body: `{ type: 'link' | 'header' | 'divider', title?: string, url?: string }`
-- Response: `{ link: LinkItem }`
-
-**DELETE `/api/links/[id]`** — Remove a link item
-- Auth: Required
-- Response: `{ success: true }`
-
-**PUT `/api/links/reorder`** — Reorder all link items
-- Auth: Required
-- Body: `{ items: { id: string, sortOrder: number }[] }`
-- Response: `{ success: true }`
-
-### Click Tracking
-
-**POST `/api/click`** — Record a link click (called from public pages)
-- Auth: None (public)
-- Body: `{ linkId: string }`
-- Rate limited: 60/min per IP, 10-second dedup per link per IP
-- Response: `{ success: true }`
-
-### Analytics
-
-**GET `/api/analytics`** — Get analytics for current user's links
-- Auth: Required
-- Query params: `?period=7d|30d|90d`
-- Response:
-```json
+```typescript
+// Request
 {
-  "summary": {
-    "totalClicks": 1234,
-    "clicksThisWeek": 89,
-    "activeLinks": 8
-  },
-  "topLinks": [
-    { "id": "...", "title": "YouTube", "url": "...", "clicks": 342 }
-  ],
-  "timeSeries": [
-    { "date": "2026-02-19", "clicks": 45 },
-    { "date": "2026-02-20", "clicks": 52 }
-  ]
+  contract_text?: string;      // pasted text
+  file_url?: string;           // Supabase storage URL for uploaded file
+  athlete_id: string;
+  state: string;               // athlete's state (for compliance context)
+}
+
+// Response
+{
+  review_id: string;
+  overall_risk: "low" | "medium" | "high" | "critical";
+  attorney_recommended: boolean;
+  clauses: {
+    id: string;
+    text: string;              // extracted clause text
+    category: string;          // e.g. "perpetuity", "commission"
+    severity: "low" | "medium" | "high" | "critical";
+    explanation: string;       // plain-English explanation
+    recommendation: string;    // "Accept" | "Negotiate" | "Reject"
+    suggested_revision?: string;
+  }[];
+  summary: string;             // 2-3 sentence overall summary
+  disclaimer: string;
+  created_at: string;
 }
 ```
 
-### Slug Availability
+### NIL Match
 
-**GET `/api/slug/check?slug=cole`** — Check if slug is available
-- Auth: None (used during signup)
-- Response: `{ available: boolean }`
+**POST** `/api/deals/match`
+
+```typescript
+// Request
+{
+  athlete_id: string;
+}
+
+// Response
+{
+  matches: {
+    campaign_id: string;
+    brand_name: string;
+    campaign_title: string;
+    budget_range: string;
+    product_category: string;
+    match_score: number;       // 0-100
+    match_reasons: string[];
+    compliance_status: "compliant" | "review_required" | "ineligible";
+    compliance_notes?: string;
+  }[];
+}
+```
+
+### NIL Go Submission
+
+**POST** `/api/clearinghouse/submit`
+
+```typescript
+// Request
+{
+  deal_id: string;
+  athlete_id: string;
+  brand_id: string;
+  compensation_amount: number;
+  deal_terms: string;
+  effective_date: string;
+}
+
+// Response
+{
+  submission_id: string;
+  nil_go_reference: string;
+  status: "submitted" | "pending_review" | "approved" | "denied";
+  deadline: string;            // 5 business days from submission
+}
+```
 
 ---
 
-## 12. Success Criteria
+## 11. Success Criteria
 
 ### MVP Success Definition
-
-The MVP is complete when a user can sign up, build a link page with a chosen theme, share their public URL, and view click analytics — all validated by passing E2E tests covering every user journey.
+A successful MVP demonstrates product-market fit with early adopters, achieves initial revenue, and establishes the data foundation for AI improvement.
 
 ### Functional Requirements
-
-- ✅ User can sign up with email/password and choose a unique slug
-- ✅ User can sign in with Google OAuth
-- ✅ User can edit display name, bio, and avatar URL
-- ✅ User can add, remove, and reorder links via drag-and-drop
-- ✅ User can add section headers and dividers
-- ✅ User can select from 4 themes with instant live preview
-- ✅ Editor shows side-by-side layout on desktop with toggle options
-- ✅ Editor shows toggle mode on mobile
-- ✅ Saving profile persists all changes to database
-- ✅ Public page at `/<slug>` renders with selected theme (SSR)
-- ✅ Public page includes correct OG meta tags
-- ✅ Clicking a link on the public page tracks the click
-- ✅ Analytics dashboard shows click counts per link
-- ✅ Analytics dashboard shows time-series chart (7d/30d/90d)
-- ✅ Marketing landing page exists at `/`
-- ✅ All protected routes redirect to login when unauthenticated
-- ✅ Rate limiting prevents abuse on API endpoints
+- ✅ Athlete can sign up, complete profile, and receive NIL matches within 10 minutes
+- ✅ Contract Guard analyzes a 10-page PDF contract and returns structured results in <30 seconds
+- ✅ Parent can link to athlete account and view recruiting dashboard
+- ✅ Brand can create a campaign and browse matched athletes
+- ✅ State NIL rule engine correctly identifies eligibility for all 42 permitting jurisdictions
+- ✅ Stripe billing handles free, Starter ($9.99), and Pro ($29.99) tiers correctly
+- ✅ D1 athlete deal submission triggers NIL Go clearinghouse workflow
+- ✅ All pages load in <2 seconds on a 4G connection (Core Web Vitals: LCP <2.5s)
 
 ### Quality Indicators
-
-- TypeScript strict mode with zero type errors
-- Biome passes with zero lint/format warnings
-- Vitest unit test coverage on all utility functions and API logic
-- agent-browser E2E tests pass for every user journey
-- Lighthouse performance score ≥ 90 on public pages
-- All pages responsive from 320px to 1920px
+- Contract Guard clause detection accuracy: >90% on a test set of 50 real NIL contracts
+- NIL match relevance: >70% of athletes rate top 3 matches as "somewhat" or "very" relevant
+- Zero unauthorized data access across role boundaries (verified by security audit)
+- Stripe webhook failure rate: <0.1%
 
 ### User Experience Goals
-
-- Signup-to-published page in under 2 minutes
-- Theme switching feels instant (no loading states)
-- Drag-and-drop reordering is smooth and intuitive
-- Public page loads in under 1 second (server-rendered)
+- First contract review completed without reading documentation
+- Parent dashboard understood without onboarding tutorial by 80%+ of test users
+- Mobile web experience rated >4/5 by beta users (web-first, but must be mobile-responsive)
 
 ---
 
-## 13. Implementation Phases
+## 12. Implementation Phases
 
-### Phase 1: Profile Editor + Live Preview
-
-**Goal:** Users can sign up, log in, and build their link page with a live preview.
+### Phase 1: Foundation & Contract Guard (Weeks 1–6)
+**Goal:** Core infrastructure + the highest-urgency, most defensible MVP module
 
 **Deliverables:**
-- ✅ Project scaffolding (Next.js + Tailwind + shadcn/ui + Biome + Vitest)
-- ✅ Neon database setup + Drizzle schema + migrations
-- ✅ Neon Auth integration (email/password + Google OAuth)
-- ✅ Signup page with slug selection and real-time availability check
-- ✅ Login page (email/password + Google OAuth)
-- ✅ Auth middleware protecting dashboard routes
-- ✅ Profile editor form (name, bio, avatar URL)
-- ✅ Link management (add, remove, reorder with dnd-kit)
-- ✅ Header and divider support
-- ✅ Live preview panel (default "Minimal" theme)
-- ✅ Side-by-side layout (desktop) with editor-only/preview-only toggles
-- ✅ Toggle mode (mobile)
-- ✅ Explicit save button with toast feedback
-- ✅ Unit tests for validation logic, API handlers
-- ✅ E2E tests: signup flow, login flow, profile editing, link CRUD, drag-and-drop reorder
+- ✅ Next.js project scaffolded with Supabase, Stripe, Tailwind, shadcn/ui
+- ✅ Authentication (email + Google OAuth) with role-based routing
+- ✅ Athlete onboarding flow (sport, school, state, position, social handles)
+- ✅ Contract Guard: PDF/DOCX upload, Claude contract analysis, structured report UI
+- ✅ Contract history page (athlete's past reviews)
+- ✅ Free tier (1 review/month) + Pro tier ($29.99/mo, unlimited)
+- ✅ Stripe billing integration with webhook handling
+- ✅ Basic athlete profile page (public URL)
+- ✅ Deploy to Vercel + Vercel Analytics
 
-**Validation:**
-- User can sign up, add 5 links + 1 header + 1 divider, reorder them, save, refresh, and see persisted data
-- Preview updates in real-time without saving
-- All E2E tests pass via agent-browser
+**Validation:** 20 beta athletes complete at least one contract review; NPS >40
 
----
-
-### Phase 2: Theme System
-
-**Goal:** Users can choose from 4 distinct, layout-varying themes with instant preview.
+### Phase 2: NIL Matchmaker + Parent Dashboard (Weeks 7–12)
+**Goal:** Complete the three-sided marketplace and activate the parent acquisition wedge
 
 **Deliverables:**
-- ✅ 4 theme components: Minimal, Dark, Colorful, Professional
-- ✅ Each theme has its own layout structure and visual style
-- ✅ Theme picker UI with thumbnail previews
-- ✅ Instant theme switching in the live preview
-- ✅ Theme selection persisted to database
-- ✅ All themes responsive (320px – 1920px)
-- ✅ Smooth CSS transitions between themes
-- ✅ Unit tests for theme rendering logic
-- ✅ E2E tests: theme selection, preview updates, persistence after save and reload
+- ✅ Brand onboarding and campaign creation flow
+- ✅ NIL Matchmaker: matching algorithm + match feed for athletes
+- ✅ Campaign management dashboard for brands
+- ✅ Deal workflow: apply → review → accept → NIL Go submission
+- ✅ State NIL compliance engine (42 states + D.C.)
+- ✅ NIL Go clearinghouse API integration
+- ✅ Parent dashboard: linked athlete view, recruiting timeline, deal monitor
+- ✅ Email notifications (Resend) for matches, deal status, deadlines
+- ✅ Starter tier ($9.99/mo) with NIL matchmaking features
 
-**Validation:**
-- Switching between all 4 themes updates the preview instantly
-- Theme persists after save → reload
-- Each theme looks correct and distinct on mobile and desktop
-- All E2E tests pass via agent-browser
+**Validation:** 5 completed NIL deals brokered through platform; 100 parent dashboard signups
 
----
-
-### Phase 3: Public URLs + SEO
-
-**Goal:** Each user gets a public page at `/<slug>` with proper SEO and social sharing support.
+### Phase 3: Recruiter's Shadow + Combine Optimizer (Weeks 13–20)
+**Goal:** Expand athlete value proposition to transfer portal and performance optimization
 
 **Deliverables:**
-- ✅ Dynamic `[slug]` route with server-side rendering
-- ✅ Public page renders profile + links with the selected theme
-- ✅ OG meta tags (`og:title`, `og:description`, `og:image`, `og:url`, `twitter:card`)
-- ✅ 404 handling for non-existent slugs
-- ✅ Reserved slug protection (prevent registration of system routes)
-- ✅ Marketing landing page at `/` (hero, features, CTAs)
-- ✅ Slug change in user settings
-- ✅ Canonical URL in `<head>`
-- ✅ Unit tests for slug validation, OG tag generation
-- ✅ E2E tests: public page rendering, correct theme display, OG tag verification, 404 page, landing page navigation, slug change flow
+- ✅ Transfer portal: athlete portal entry flow, roster vacancy monitoring
+- ✅ Recruiter's Shadow: AI-powered matching between portal athletes and open roster spots
+- ✅ Combine Optimizer: performance benchmarking tool with sport-specific metrics
+- ✅ Coach/institutional dashboard (B2B SaaS — D3 schools as initial target)
+- ✅ Real-time roster vacancy alerts (email + in-app)
+- ✅ Elite tier ($99/mo) launch
 
-**Validation:**
-- Visiting `/<slug>` renders the correct profile with the correct theme
-- Sharing the URL on social media shows correct preview (OG tags)
-- Non-existent slugs show a 404 page
-- Landing page loads and CTAs navigate correctly
-- All E2E tests pass via agent-browser
+**Validation:** 3 D3 institutional contracts signed ($5,000–$15,000/year); 50 portal athlete placements
 
----
-
-### Phase 4: Click Analytics
-
-**Goal:** Track clicks on public page links and display analytics in a dashboard.
+### Phase 4: Highlight Architect + Data Network Effects (Weeks 21–30)
+**Goal:** Complete the five-module platform and activate the viral content flywheel
 
 **Deliverables:**
-- ✅ Click tracking endpoint (`POST /api/click`)
-- ✅ Click recording on public page link clicks (via `sendBeacon` or fetch)
-- ✅ Rate limiting on click endpoint (60/min per IP, 10-sec dedup)
-- ✅ Analytics API endpoint with period filtering
-- ✅ Analytics dashboard page (`/analytics`)
-- ✅ Summary cards (total clicks, this week, active links)
-- ✅ Top links table with click counts
-- ✅ Time-series line chart (7d / 30d / 90d toggle)
-- ✅ Per-link daily breakdown (expandable rows)
-- ✅ Unit tests for analytics aggregation queries, rate limiting logic
-- ✅ E2E tests: click tracking fires on public page, analytics dashboard shows correct data, period toggle works, chart renders
+- ✅ Highlight Architect: AI-powered highlight reel creation from uploaded raw footage
+- ✅ TikTok/Instagram share integration with platform watermark
+- ✅ Social audience data integration (OAuth-based pull of follower/engagement data)
+- ✅ Longitudinal athlete profile (career arc from HS through college)
+- ✅ D1 institutional B2B sales motion launch
+- ✅ Data licensing product scoping (for Phase 5)
 
-**Validation:**
-- Clicking links on a public page increments the count
-- Analytics dashboard reflects clicks accurately
-- Time-series chart displays correctly for all period options
-- Rate limiting prevents click spam
-- All E2E tests pass via agent-browser
+**Validation:** 500 total athletes on platform; 10 viral highlights generating >100K views; 1 D1 institutional contract
 
 ---
 
-## 14. Future Considerations
+## 13. Future Considerations
 
 ### Post-MVP Enhancements
-- **File upload for avatars** — Use Vercel Blob or Cloudflare R2 for image storage
-- **Custom domains** — Allow users to point their own domain to their page
-- **Embed support** — YouTube, Spotify, SoundCloud embeds inline in the link list
-- **Auto-save with draft/publish** — Auto-save changes as draft, explicit publish to go live
-- **Link scheduling** — Show/hide links based on date ranges
-- **More themes** — Community-contributed themes, custom color overrides
+- **Mobile native apps** (iOS + Android) — athlete and parent personas are heavily mobile; React Native with Expo sharing logic from web
+- **Wearable integrations** — Apple Watch, Garmin, Whoop data ingestion for Combine Optimizer
+- **Academic eligibility automation** — direct integration with school SIS for real-time GPA/credit monitoring
+- **Financial planning module** — NIL income projection, tax withholding estimates, budgeting for athletes newly earning 5-figure+ incomes
+- **AI recruiting film analysis** — beyond highlight creation, position-specific film breakdown for coaches
 
 ### Integration Opportunities
-- **Social login expansion** — GitHub, Twitter/X, Discord OAuth
-- **Analytics export** — CSV/JSON download of click data
-- **Webhook notifications** — Notify external services on click milestones
-- **API access** — Public API for programmatic profile management
+- **Hudl** — import existing athlete highlight footage; partnership for small-school athletes without game film
+- **NCAA Eligibility Center** — eligibility status API (requires formal partnership)
+- **Teamworks** — white-label institutional module for schools already on Teamworks
+- **IMG Academy / NCSA** — data partnership for recruiting history
 
 ### Advanced Features
-- **Admin panel** — User management, content moderation, system stats
-- **A/B testing** — Test different link orders or themes for click optimization
-- **Rich analytics** — Referrer tracking, geographic data, device breakdown
-- **Custom CSS** — Per-user CSS overrides for advanced customization
-- **Team accounts** — Shared pages managed by multiple users
+- **Collective intelligence** — aggregate anonymized deal data to show athletes "what athletes like you are earning" benchmarks
+- **Agent marketplace** — verified NIL agent directory with capped commission disclosure (addressing the 67% of athletes who unknowingly gave agents a percentage of earnings)
+- **EA Sports / video game licensing** — athlete opt-in for likeness licensing to gaming companies
+- **Professional transition module** — career resources for the 98% of athletes who don't go pro
 
 ---
 
-## 15. Risks & Mitigations
+## 14. Risks & Mitigations
 
-| Risk | Impact | Mitigation |
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| **Unauthorized practice of law (Contract Guard)** | Medium | High | Prominent "informational only" disclaimers; no legal advice framing; attorney referral for critical-risk contracts; monitor Utah/Colorado AI legal tool regulatory sandboxes |
+| **NIL Go clearinghouse API access denied** | Medium | High | Build manual submission workflow as fallback; engage NIL Go directly for early access; prioritize non-D1 market initially (no clearinghouse required) |
+| **Agent/UAAA licensing requirements triggered** | Low | High | Structure platform as passive marketplace (athletes and brands negotiate directly); no commission on deals; legal opinion letter confirming passive marketplace structure pre-launch |
+| **Cold start: no brands, no athletes** | High | High | Launch Contract Guard first (single-player value, no network needed); recruit 100 HS athletes in target markets via parent Facebook groups; offer free brand campaigns for first 90 days |
+| **Hudl acquires a competitor or builds parent features** | Medium | Medium | Accelerate parent dashboard differentiation; build parent network effects (parent-to-parent referrals via team invite flows); Hudl's B2B DNA makes consumer pivot structurally difficult |
+
+---
+
+## 15. Appendix
+
+### Related Documents
+- `sports_agent_breakdown.md` — Market analysis and VC-level case document (source for this PRD)
+
+### Key Market References
+- House v. NCAA settlement (June 2025): $2.8B back-pay + $20.5M annual revenue sharing
+- NIL Go clearinghouse (Deloitte): mandatory D1 NIL deal submission >$600, 5-business-day window
+- College Sports Commission: new independent regulatory body, active enforcement from January 2026
+- SCORE Act: stalled in House December 2025, unlikely before late 2026
+- COPPA updated rules: effective April 2026, verifiable parental consent for under-13
+
+### Pricing Reference Points
+| Competitor | Price | What It Does |
 |---|---|---|
-| **Neon Auth is relatively new** — Less community support and documentation compared to established auth solutions. | Medium | Neon Auth is built on Better Auth, which has extensive docs. Fall back to Better Auth docs when Neon-specific docs are sparse. Keep auth logic isolated so it can be swapped if needed. |
-| **Click tracking volume** — Popular pages could generate high write volume to the `click_events` table. | Medium | Use `navigator.sendBeacon` (non-blocking). Rate limit aggressively. Consider batching writes or a summary table for high-volume pages in a future phase. Neon's serverless auto-scaling helps absorb bursts. |
-| **Slug collisions with app routes** — User-chosen slugs could conflict with app routes like `/login` or `/api`. | High | Maintain a strict reserved-slugs list checked at signup. The `[slug]` catch-all route should be the lowest priority in Next.js routing (place it last). |
-| **Theme layout complexity** — 4 themes with different layouts is significantly more work than CSS-only themes. | Medium | Start with shared base components and have each theme compose them differently. Define a clear `ThemeProps` interface so all themes receive the same data. Build Minimal first as the reference, then diverge. |
-| **E2E test reliability** — Browser-based E2E tests can be flaky, especially with auth flows and drag-and-drop. | Medium | Use agent-browser's `wait` commands extensively. Isolate test data per run. For drag-and-drop, test the reorder API directly as a unit test and use E2E only for the happy path. |
+| NCSA (IMG Academy) | $1,320–$4,200/family | Recruiting profile + coach contacts |
+| Hudl (HS team) | $900–$3,300/team/year | Video analysis for coaches |
+| Opendorse (Nebraska) | $235,000/year | NIL deal execution (institutional) |
+| Teamworks (D1) | $20,000–$100,000+/year | Athletic dept operations |
+| Sports attorney | $250–$500/hr | Contract review (~$500–$1,500/contract) |
+| Private highlight editor | $150–$2,000/reel | Recruiting highlight production |
+| Exos combine prep | $15,000–$30,000/8 weeks | Elite combine preparation |
 
----
-
-## 16. Appendix
-
-### Key Dependencies
-
-| Package | Docs |
-|---|---|
-| Next.js | https://nextjs.org/docs |
-| Tailwind CSS | https://tailwindcss.com/docs |
-| shadcn/ui | https://ui.shadcn.com |
-| Drizzle ORM | https://orm.drizzle.team/docs |
-| Neon | https://neon.com/docs |
-| Neon Auth | https://neon.com/docs/auth/overview |
-| dnd-kit | https://dndkit.com |
-| Recharts | https://recharts.org |
-| Zod | https://zod.dev |
-| Biome | https://biomejs.dev |
-| Vitest | https://vitest.dev |
-
-### Reference Implementations
-
-- [LinkStack](https://linkstack.org/) — Full-featured self-hosted Linktree alternative (PHP/Laravel)
-- [LittleLink-Server](https://github.com/techno-tim/littlelink-server) — Lightweight Node.js alternative
-- [LibreLinks](https://github.com/urdadx/librelinks) — Open-source Next.js link-in-bio tool
-- [OpenBento](https://github.com/syntax-syndicate/openbento-linkedin-bio-builder) — Bento-grid style bio page builder
+### Target Launch Markets (Priority Order)
+1. California (852,575 HS athletes, first NIL state, UC system density)
+2. Florida (308,396 HS athletes, HS NIL approved, SEC/ACC concentration)
+3. New York + New Jersey (609,000 combined, both allow HS NIL)
+4. Illinois (328,362 athletes, HS NIL, strong AAU/travel culture)
+5. North Carolina (ACC density, active NIL ecosystem)

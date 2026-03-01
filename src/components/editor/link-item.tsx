@@ -1,28 +1,69 @@
 "use client";
-
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Link as LinkIcon, Minus, Trash2, Type } from "lucide-react";
+import { GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { LinkItem } from "@/types";
 
 interface LinkItemProps {
-	id: string;
-	type: "link" | "header" | "divider";
-	title: string;
-	url: string;
+	item: LinkItem;
 	onDelete: (id: string) => void;
 }
 
-export function LinkItemCard({ id, type, title, url, onDelete }: LinkItemProps) {
+export function LinkItemComponent({ item, onDelete }: LinkItemProps) {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-		id,
+		id: item.id,
 	});
-
 	const style = {
 		transform: CSS.Transform.toString(transform),
 		transition,
 		opacity: isDragging ? 0.5 : 1,
 	};
+
+	if (item.type === "divider") {
+		return (
+			<div ref={setNodeRef} style={style} className="flex items-center gap-2 py-2">
+				<button {...attributes} {...listeners} className="cursor-grab" aria-label="Drag handle">
+					<GripVertical className="h-4 w-4 text-muted-foreground" />
+				</button>
+				<div className="flex-1 border-t" />
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={() => onDelete(item.id)}
+					aria-label="Delete divider"
+				>
+					<Trash2 className="h-4 w-4" />
+				</Button>
+			</div>
+		);
+	}
+
+	if (item.type === "header") {
+		return (
+			<div
+				ref={setNodeRef}
+				style={style}
+				className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3"
+			>
+				<button {...attributes} {...listeners} className="cursor-grab" aria-label="Drag handle">
+					<GripVertical className="h-4 w-4 text-muted-foreground" />
+				</button>
+				<div className="flex-1">
+					<p className="text-sm font-semibold">{item.title}</p>
+					<p className="text-xs text-muted-foreground">Header</p>
+				</div>
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={() => onDelete(item.id)}
+					aria-label="Delete header"
+				>
+					<Trash2 className="h-4 w-4" />
+				</Button>
+			</div>
+		);
+	}
 
 	return (
 		<div
@@ -30,46 +71,18 @@ export function LinkItemCard({ id, type, title, url, onDelete }: LinkItemProps) 
 			style={style}
 			className="flex items-center gap-2 rounded-lg border bg-card p-3"
 		>
-			<button
-				type="button"
-				className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
-				aria-label="Drag handle"
-				{...attributes}
-				{...listeners}
-			>
-				<GripVertical className="h-4 w-4" />
+			<button {...attributes} {...listeners} className="cursor-grab" aria-label="Drag handle">
+				<GripVertical className="h-4 w-4 text-muted-foreground" />
 			</button>
-
 			<div className="flex-1 min-w-0">
-				{type === "link" && (
-					<div className="flex items-center gap-2">
-						<LinkIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-						<div className="min-w-0">
-							<p className="text-sm font-medium truncate">{title}</p>
-							<p className="text-xs text-muted-foreground truncate">{url}</p>
-						</div>
-					</div>
-				)}
-				{type === "header" && (
-					<div className="flex items-center gap-2">
-						<Type className="h-4 w-4 shrink-0 text-muted-foreground" />
-						<p className="text-sm font-semibold">{title}</p>
-					</div>
-				)}
-				{type === "divider" && (
-					<div className="flex items-center gap-2">
-						<Minus className="h-4 w-4 shrink-0 text-muted-foreground" />
-						<div className="flex-1 border-t" />
-					</div>
-				)}
+				<p className="text-sm font-medium truncate">{item.title}</p>
+				<p className="text-xs text-muted-foreground truncate">{item.url}</p>
 			</div>
-
 			<Button
 				variant="ghost"
 				size="icon"
-				className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-				onClick={() => onDelete(id)}
-				aria-label="Delete"
+				onClick={() => onDelete(item.id)}
+				aria-label="Delete link"
 			>
 				<Trash2 className="h-4 w-4" />
 			</Button>

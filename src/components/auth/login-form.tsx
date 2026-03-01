@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,29 +11,24 @@ export function LoginForm() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
-	const [loading, setLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setLoading(true);
 		setError("");
+		setIsLoading(true);
 
 		try {
-			const { error: authError } = await authClient.signIn.email({
-				email,
-				password,
-			});
-
-			if (authError) {
-				setError("Invalid email or password");
-				setLoading(false);
+			const { error: signInError } = await authClient.signIn.email({ email, password });
+			if (signInError) {
+				setError(signInError.message ?? "Invalid credentials");
 				return;
 			}
-
 			router.push("/editor");
 		} catch {
-			setError("Something went wrong. Please try again.");
-			setLoading(false);
+			setError("An unexpected error occurred");
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -45,29 +39,26 @@ export function LoginForm() {
 				<Input
 					id="email"
 					type="email"
-					placeholder="you@example.com"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
-					aria-label="Email"
+					placeholder="you@example.com"
+					required
 				/>
 			</div>
-
 			<div className="space-y-2">
 				<Label htmlFor="password">Password</Label>
 				<Input
 					id="password"
 					type="password"
-					placeholder="Your password"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
-					aria-label="Password"
+					placeholder="********"
+					required
 				/>
 			</div>
-
-			{error && <p className="text-sm text-destructive text-center">{error}</p>}
-
-			<Button type="submit" className="w-full" disabled={loading}>
-				{loading ? "Signing in..." : "Sign In"}
+			{error && <p className="text-sm text-red-600">{error}</p>}
+			<Button type="submit" className="w-full" disabled={isLoading}>
+				{isLoading ? "Signing in..." : "Sign In"}
 			</Button>
 		</form>
 	);

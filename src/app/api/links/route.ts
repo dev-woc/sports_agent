@@ -1,4 +1,6 @@
-import { desc, eq } from "drizzle-orm";
+export const dynamic = "force-dynamic";
+
+import { asc, eq, max } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
 import { db } from "@/lib/db";
@@ -13,13 +15,13 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 	}
 
-	const { data } = await auth.getSession();
-	if (!data?.user) {
+	const { data: session } = await auth.getSession();
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	const profile = await db.query.profiles.findFirst({
-		where: eq(profiles.userId, data.user.id),
+		where: eq(profiles.userId, session.user.id),
 	});
 	if (!profile) {
 		return NextResponse.json({ error: "Profile not found" }, { status: 404 });
@@ -31,14 +33,14 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ error: result.error.issues[0]?.message }, { status: 400 });
 	}
 
-	// Get current max sortOrder
-	const lastItem = await db.query.linkItems.findFirst({
-		where: eq(linkItems.profileId, profile.id),
-		orderBy: [desc(linkItems.sortOrder)],
-	});
-	const nextOrder = (lastItem?.sortOrder ?? -1) + 1;
+	const [maxOrderResult] = await db
+		.select({ maxOrder: max(linkItems.sortOrder) })
+		.from(linkItems)
+		.where(eq(linkItems.profileId, profile.id));
 
-	const [newLink] = await db
+	const nextOrder = (maxOrderResult?.maxOrder ?? -1) + 1;
+
+	const [link] = await db
 		.insert(linkItems)
 		.values({
 			profileId: profile.id,
@@ -49,5 +51,5 @@ export async function POST(request: NextRequest) {
 		})
 		.returning();
 
-	return NextResponse.json({ link: newLink }, { status: 201 });
+	return NextResponse.json({ link }, { status: 201 });
 }

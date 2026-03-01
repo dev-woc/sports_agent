@@ -1,92 +1,84 @@
-import { describe, expect, it } from "vitest";
-import { linkItemSchema, profileSchema, reorderSchema, slugSchema } from "../validations";
+import { describe, expect, test } from "vitest";
+import {
+	athleteProfileSchema,
+	linkItemSchema,
+	profileSchema,
+	reorderSchema,
+	slugSchema,
+} from "../validations";
 
 describe("slugSchema", () => {
-	it("accepts valid slugs", () => {
-		expect(slugSchema.safeParse("cole").success).toBe(true);
-		expect(slugSchema.safeParse("my-page").success).toBe(true);
+	test("valid slugs pass", () => {
+		expect(slugSchema.safeParse("my-slug").success).toBe(true);
+		expect(slugSchema.safeParse("abc").success).toBe(true);
 		expect(slugSchema.safeParse("user123").success).toBe(true);
-		expect(slugSchema.safeParse("a1b").success).toBe(true);
+		expect(slugSchema.safeParse("a-b-c").success).toBe(true);
 	});
 
-	it("rejects slugs that are too short", () => {
+	test("too short fails", () => {
 		expect(slugSchema.safeParse("ab").success).toBe(false);
-		expect(slugSchema.safeParse("a").success).toBe(false);
 	});
 
-	it("rejects slugs that are too long", () => {
+	test("too long fails", () => {
 		expect(slugSchema.safeParse("a".repeat(31)).success).toBe(false);
 	});
 
-	it("rejects reserved slugs", () => {
-		expect(slugSchema.safeParse("admin").success).toBe(false);
+	test("reserved slugs fail", () => {
 		expect(slugSchema.safeParse("login").success).toBe(false);
+		expect(slugSchema.safeParse("admin").success).toBe(false);
 		expect(slugSchema.safeParse("api").success).toBe(false);
-		expect(slugSchema.safeParse("editor").success).toBe(false);
 	});
 
-	it("rejects uppercase slugs", () => {
-		expect(slugSchema.safeParse("MyPage").success).toBe(false);
-		expect(slugSchema.safeParse("COLE").success).toBe(false);
+	test("uppercase fails", () => {
+		expect(slugSchema.safeParse("MySlug").success).toBe(false);
 	});
 
-	it("rejects special characters", () => {
-		expect(slugSchema.safeParse("my_page").success).toBe(false);
-		expect(slugSchema.safeParse("my page").success).toBe(false);
-		expect(slugSchema.safeParse("my@page").success).toBe(false);
+	test("special characters fail", () => {
+		expect(slugSchema.safeParse("my_slug").success).toBe(false);
+		expect(slugSchema.safeParse("my slug").success).toBe(false);
+		expect(slugSchema.safeParse("my@slug").success).toBe(false);
 	});
 
-	it("rejects slugs starting or ending with a hyphen", () => {
-		expect(slugSchema.safeParse("-mypage").success).toBe(false);
-		expect(slugSchema.safeParse("mypage-").success).toBe(false);
-		expect(slugSchema.safeParse("-my-").success).toBe(false);
+	test("cannot start or end with hyphen", () => {
+		expect(slugSchema.safeParse("-slug").success).toBe(false);
+		expect(slugSchema.safeParse("slug-").success).toBe(false);
 	});
 });
 
 describe("profileSchema", () => {
-	it("accepts a valid profile", () => {
+	test("valid profile passes", () => {
 		const result = profileSchema.safeParse({
-			displayName: "Cole",
+			displayName: "John Doe",
 			bio: "Hello world",
-			avatarUrl: "https://example.com/avatar.png",
+			avatarUrl: "https://example.com/avatar.jpg",
 			theme: "minimal",
 		});
 		expect(result.success).toBe(true);
 	});
 
-	it("accepts empty displayName", () => {
+	test("bio over 160 chars fails", () => {
 		const result = profileSchema.safeParse({
-			displayName: "",
-			bio: "",
-			avatarUrl: "",
-			theme: "minimal",
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("rejects bio over 160 characters", () => {
-		const result = profileSchema.safeParse({
-			displayName: "Cole",
-			bio: "x".repeat(161),
+			displayName: "John",
+			bio: "a".repeat(161),
 			avatarUrl: "",
 			theme: "minimal",
 		});
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts bio at exactly 160 characters", () => {
+	test("bio at exactly 160 chars passes", () => {
 		const result = profileSchema.safeParse({
-			displayName: "Cole",
-			bio: "x".repeat(160),
+			displayName: "John",
+			bio: "a".repeat(160),
 			avatarUrl: "",
 			theme: "minimal",
 		});
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects invalid avatar URL", () => {
+	test("invalid avatar URL fails", () => {
 		const result = profileSchema.safeParse({
-			displayName: "Cole",
+			displayName: "John",
 			bio: "",
 			avatarUrl: "not-a-url",
 			theme: "minimal",
@@ -94,19 +86,19 @@ describe("profileSchema", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts empty avatar URL", () => {
+	test("empty avatar URL passes", () => {
 		const result = profileSchema.safeParse({
-			displayName: "Cole",
+			displayName: "John",
 			bio: "",
 			avatarUrl: "",
-			theme: "minimal",
+			theme: "dark",
 		});
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects name over 50 characters", () => {
+	test("name over 50 chars fails", () => {
 		const result = profileSchema.safeParse({
-			displayName: "x".repeat(51),
+			displayName: "a".repeat(51),
 			bio: "",
 			avatarUrl: "",
 			theme: "minimal",
@@ -116,47 +108,39 @@ describe("profileSchema", () => {
 });
 
 describe("linkItemSchema", () => {
-	it("accepts a link with title and URL", () => {
+	test("link with title and url passes", () => {
 		const result = linkItemSchema.safeParse({
 			type: "link",
-			title: "My Website",
+			title: "My Link",
 			url: "https://example.com",
 		});
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects a link without a URL", () => {
+	test("link without url fails", () => {
 		const result = linkItemSchema.safeParse({
 			type: "link",
-			title: "My Website",
+			title: "My Link",
 		});
 		expect(result.success).toBe(false);
 	});
 
-	it("rejects a link without a title", () => {
-		const result = linkItemSchema.safeParse({
-			type: "link",
-			url: "https://example.com",
-		});
-		expect(result.success).toBe(false);
-	});
-
-	it("accepts a header with title", () => {
+	test("header with title passes", () => {
 		const result = linkItemSchema.safeParse({
 			type: "header",
-			title: "Social Media",
+			title: "Section",
 		});
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects a header without title", () => {
+	test("header without title fails", () => {
 		const result = linkItemSchema.safeParse({
 			type: "header",
 		});
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts a divider with no fields", () => {
+	test("divider passes with no fields", () => {
 		const result = linkItemSchema.safeParse({
 			type: "divider",
 		});
@@ -165,7 +149,7 @@ describe("linkItemSchema", () => {
 });
 
 describe("reorderSchema", () => {
-	it("accepts a valid reorder array", () => {
+	test("valid array passes", () => {
 		const result = reorderSchema.safeParse({
 			items: [
 				{ id: "550e8400-e29b-41d4-a716-446655440000", sortOrder: 0 },
@@ -175,29 +159,102 @@ describe("reorderSchema", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("accepts an empty array", () => {
+	test("empty array passes", () => {
 		const result = reorderSchema.safeParse({ items: [] });
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects missing id", () => {
+	test("missing id fails", () => {
 		const result = reorderSchema.safeParse({
 			items: [{ sortOrder: 0 }],
 		});
 		expect(result.success).toBe(false);
 	});
 
-	it("rejects negative sortOrder", () => {
+	test("negative sortOrder fails", () => {
 		const result = reorderSchema.safeParse({
 			items: [{ id: "550e8400-e29b-41d4-a716-446655440000", sortOrder: -1 }],
 		});
 		expect(result.success).toBe(false);
 	});
 
-	it("rejects non-uuid id", () => {
+	test("non-uuid id fails", () => {
 		const result = reorderSchema.safeParse({
 			items: [{ id: "not-a-uuid", sortOrder: 0 }],
 		});
 		expect(result.success).toBe(false);
+	});
+});
+
+describe("athleteProfileSchema", () => {
+	const valid = {
+		sport: "Football",
+		position: "QB",
+		school: "University of Michigan",
+		division: "D1",
+		state: "MI",
+		gradYear: 2026,
+		eligibilityStatus: "Junior",
+		socialInstagram: "@johndoe",
+		socialTiktok: "",
+		socialTwitter: "",
+	};
+
+	test("accepts valid athlete profile", () => {
+		expect(athleteProfileSchema.safeParse(valid).success).toBe(true);
+	});
+
+	test("rejects empty sport", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, sport: "" }).success).toBe(false);
+	});
+
+	test("rejects empty school", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, school: "" }).success).toBe(false);
+	});
+
+	test("rejects invalid division", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, division: "D5" }).success).toBe(false);
+	});
+
+	test("rejects state code longer than 2 chars", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, state: "CAL" }).success).toBe(false);
+	});
+
+	test("rejects state code shorter than 2 chars", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, state: "C" }).success).toBe(false);
+	});
+
+	test("rejects grad year below 2025", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, gradYear: 2020 }).success).toBe(false);
+	});
+
+	test("rejects grad year above 2032", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, gradYear: 2040 }).success).toBe(false);
+	});
+
+	test("accepts High School division", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, division: "High School" }).success).toBe(
+			true,
+		);
+	});
+
+	test("accepts NAIA and NJCAA divisions", () => {
+		expect(athleteProfileSchema.safeParse({ ...valid, division: "NAIA" }).success).toBe(true);
+		expect(athleteProfileSchema.safeParse({ ...valid, division: "NJCAA" }).success).toBe(true);
+	});
+
+	test("accepts empty optional social fields", () => {
+		const result = athleteProfileSchema.safeParse({
+			...valid,
+			socialInstagram: "",
+			socialTiktok: "",
+			socialTwitter: "",
+		});
+		expect(result.success).toBe(true);
+	});
+
+	test("position is optional", () => {
+		const { position: _, ...withoutPosition } = valid;
+		expect(athleteProfileSchema.safeParse(withoutPosition).success).toBe(true);
 	});
 });

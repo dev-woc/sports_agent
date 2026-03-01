@@ -1,72 +1,52 @@
 "use client";
-
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { slugSchema } from "@/lib/validations";
 
 interface SlugInputProps {
 	value: string;
-	onChange: (value: string) => void;
+	onChange: (v: string) => void;
 	error?: string;
 }
 
-export function SlugInput({ value, onChange, error: externalError }: SlugInputProps) {
-	const [checking, setChecking] = useState(false);
-	const [available, setAvailable] = useState<boolean | null>(null);
-	const [validationError, setValidationError] = useState<string | null>(null);
-	const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-	const checkAvailability = useCallback(async (slug: string) => {
-		const result = slugSchema.safeParse(slug);
-		if (!result.success) {
-			setValidationError(result.error.issues[0]?.message ?? "Invalid username");
-			setAvailable(null);
-			setChecking(false);
-			return;
-		}
-
-		setValidationError(null);
-		setChecking(true);
-
-		try {
-			const res = await fetch(`/api/slug/check?slug=${encodeURIComponent(slug)}`);
-			const data = await res.json();
-			setAvailable(data.available);
-			if (!data.available && data.error) {
-				setValidationError(data.error);
-			}
-		} catch {
-			setValidationError("Failed to check availability");
-		} finally {
-			setChecking(false);
-		}
-	}, []);
+export function SlugInput({ value, onChange, error }: SlugInputProps) {
+	const [status, setStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">(
+		"idle",
+	);
+	const [statusMessage, setStatusMessage] = useState("");
+	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
 		if (!value || value.length < 3) {
-			setAvailable(null);
-			setValidationError(null);
+			setStatus("idle");
+			setStatusMessage("");
 			return;
 		}
 
-		if (debounceRef.current) {
-			clearTimeout(debounceRef.current);
-		}
+		setStatus("checking");
+		if (timerRef.current) clearTimeout(timerRef.current);
 
-		debounceRef.current = setTimeout(() => {
-			checkAvailability(value);
+		timerRef.current = setTimeout(async () => {
+			try {
+				const res = await fetch(`/api/slug/check?slug=${encodeURIComponent(value)}`);
+				const data = await res.json();
+				if (data.available) {
+					setStatus("available");
+					setStatusMessage("Username is available");
+				} else {
+					setStatus(data.error ? "invalid" : "taken");
+					setStatusMessage(data.error || "Username is taken");
+				}
+			} catch {
+				setStatus("idle");
+				setStatusMessage("");
+			}
 		}, 300);
 
 		return () => {
-			if (debounceRef.current) {
-				clearTimeout(debounceRef.current);
-			}
+			if (timerRef.current) clearTimeout(timerRef.current);
 		};
-	}, [value, checkAvailability]);
-
-	const displayError = externalError || validationError;
+	}, [value]);
 
 	return (
 		<div className="space-y-2">
@@ -74,23 +54,34 @@ export function SlugInput({ value, onChange, error: externalError }: SlugInputPr
 			<div className="relative">
 				<Input
 					id="slug"
-					placeholder="your-username"
+					aria-label="Username"
 					value={value}
 					onChange={(e) => onChange(e.target.value.toLowerCase())}
-					aria-label="Username"
+					placeholder="your-username"
 				/>
-				<div className="absolute right-3 top-1/2 -translate-y-1/2">
-					{checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-					{!checking && available === true && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-					{!checking && available === false && <XCircle className="h-4 w-4 text-destructive" />}
-				</div>
+				{status === "available" && (
+					<span role="img"
+						className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600"
+						aria-label="Available"
+					>
+						&#10003;
+					</span>
+				)}
+				{(status === "taken" || status === "invalid") && (
+					<span role="img"
+						className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600"
+						aria-label="Unavailable"
+					>
+						&#10007;
+					</span>
+				)}
 			</div>
-			{displayError && <p className="text-sm text-destructive">{displayError}</p>}
-			{value && (
-				<p className="text-sm text-muted-foreground">
-					Your page: {typeof window !== "undefined" ? window.location.origin : ""}/{value}
+			{statusMessage && (
+				<p className={`text-xs ${status === "available" ? "text-green-600" : "text-red-600"}`}>
+					{statusMessage}
 				</p>
 			)}
+			{error && <p className="text-xs text-red-600">{error}</p>}
 		</div>
 	);
 }

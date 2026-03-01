@@ -1,16 +1,13 @@
-# Link-in-Bio Page Builder
+# Athlete OS
 
-A full-stack link-in-bio page builder where users can create a personalized page with links, headers, and dividers — similar to Linktree. Built with Next.js 15, React 19, and Neon Postgres.
+The unified athlete career platform — NIL matchmaking, AI-powered contract review, recruiting intelligence, and a parent dashboard. Built with Next.js 15, React 19, and Neon Postgres.
 
-## Features
+## Modules
 
-- **Email/Password Authentication** — Sign up, log in, and session management via Neon Auth
-- **Profile Editor** — Edit display name, bio, and avatar URL with a live phone-frame preview
-- **Link Management** — Add links, section headers, and dividers
-- **Drag-and-Drop Reorder** — Rearrange items with dnd-kit drag handles
-- **Live Preview** — Real-time preview panel that mirrors the public page layout
-- **Responsive Layout** — Side-by-side editor/preview on desktop, tab toggle on mobile
-- **Save with Feedback** — Explicit save button with toast notifications
+- **Contract Guard** — AI-powered NIL contract review with clause flagging (predatory terms, perpetuity clauses, buyout penalties, exclusivity traps)
+- **NIL Matchmaker** — Brand-athlete matching based on sport, geography, audience demographics, and compliance status
+- **Parent Dashboard** — Unified recruiting timeline, NIL opportunities, and eligibility tracking
+- **Athlete Profile** — Public profile with stats, social links, and highlight reel
 
 ## Tech Stack
 
@@ -18,6 +15,7 @@ A full-stack link-in-bio page builder where users can create a personalized page
 - **UI:** React 19, Tailwind CSS v4, shadcn/ui, Lucide icons
 - **Database:** Neon Postgres + Drizzle ORM
 - **Auth:** Neon Auth (`@neondatabase/auth`)
+- **AI:** Anthropic Claude (`claude-sonnet-4-6`) via Anthropic SDK
 - **Drag-and-Drop:** dnd-kit
 - **Validation:** Zod
 - **Testing:** Vitest (unit), agent-browser (E2E)
@@ -29,6 +27,7 @@ A full-stack link-in-bio page builder where users can create a personalized page
 
 - Node.js 18+
 - A [Neon](https://neon.tech) project with Auth enabled
+- An [Anthropic](https://console.anthropic.com) API key
 
 ### Setup
 
@@ -44,7 +43,7 @@ A full-stack link-in-bio page builder where users can create a personalized page
    cp .env.example .env.local
    ```
 
-   Fill in your Neon database URL, auth base URL, and cookie secret.
+   Fill in your Neon database URL, auth base URL, cookie secret, and Anthropic API key.
 
 3. **Push the database schema:**
 
@@ -79,7 +78,6 @@ src/
 ├── db/                  # Drizzle schema + connection
 ├── hooks/               # useProfile data fetching hook
 ├── lib/                 # Validations, rate limiter, utils
-├── middleware.ts        # Route protection for /editor, /analytics, /settings
 └── types/               # Shared TypeScript types
 ```
 

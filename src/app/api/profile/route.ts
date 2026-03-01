@@ -1,30 +1,27 @@
+export const dynamic = "force-dynamic";
+
 import { asc, eq } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
 import { db } from "@/lib/db";
 import { linkItems, profiles } from "@/lib/db/schema";
 import { apiRateLimiter } from "@/lib/rate-limit";
 import { profileSchema, slugSchema } from "@/lib/validations";
 
-async function getUser() {
-	const { data } = await auth.getSession();
-	return data?.user ?? null;
-}
-
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
 	const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
 	const { success } = apiRateLimiter.check(ip);
 	if (!success) {
 		return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 	}
 
-	const user = await getUser();
-	if (!user) {
+	const { data: session } = await auth.getSession();
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	const profile = await db.query.profiles.findFirst({
-		where: eq(profiles.userId, user.id),
+		where: eq(profiles.userId, session.user.id),
 	});
 
 	if (!profile) {
@@ -39,21 +36,20 @@ export async function GET(request: NextRequest) {
 	return NextResponse.json({ profile, links });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
 	const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
 	const { success } = apiRateLimiter.check(ip);
 	if (!success) {
 		return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 	}
 
-	const user = await getUser();
-	if (!user) {
+	const { data: session } = await auth.getSession();
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
-	// Check if profile already exists
 	const existing = await db.query.profiles.findFirst({
-		where: eq(profiles.userId, user.id),
+		where: eq(profiles.userId, session.user.id),
 	});
 	if (existing) {
 		return NextResponse.json({ error: "Profile already exists" }, { status: 409 });
@@ -65,35 +61,34 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ error: slugResult.error.issues[0]?.message }, { status: 400 });
 	}
 
-	// Check slug uniqueness
 	const slugTaken = await db.query.profiles.findFirst({
 		where: eq(profiles.slug, body.slug),
 	});
 	if (slugTaken) {
-		return NextResponse.json({ error: "Username is already taken" }, { status: 409 });
+		return NextResponse.json({ error: "Slug already taken" }, { status: 409 });
 	}
 
 	const [profile] = await db
 		.insert(profiles)
 		.values({
-			userId: user.id,
+			userId: session.user.id,
 			slug: body.slug,
-			displayName: body.displayName || "",
+			displayName: body.displayName ?? "",
 		})
 		.returning();
 
 	return NextResponse.json({ profile }, { status: 201 });
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: Request) {
 	const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
 	const { success } = apiRateLimiter.check(ip);
 	if (!success) {
 		return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 	}
 
-	const user = await getUser();
-	if (!user) {
+	const { data: session } = await auth.getSession();
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -103,7 +98,7 @@ export async function PUT(request: NextRequest) {
 		return NextResponse.json({ error: result.error.issues[0]?.message }, { status: 400 });
 	}
 
-	const [updated] = await db
+	const [profile] = await db
 		.update(profiles)
 		.set({
 			displayName: result.data.displayName,
@@ -112,12 +107,8 @@ export async function PUT(request: NextRequest) {
 			theme: result.data.theme,
 			updatedAt: new Date(),
 		})
-		.where(eq(profiles.userId, user.id))
+		.where(eq(profiles.userId, session.user.id))
 		.returning();
 
-	if (!updated) {
-		return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-	}
-
-	return NextResponse.json({ profile: updated });
+	return NextResponse.json({ profile });
 }
