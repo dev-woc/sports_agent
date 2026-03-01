@@ -19,45 +19,12 @@ export const profiles = pgTable(
 		displayName: text("display_name").notNull().default(""),
 		bio: text("bio").notNull().default(""),
 		avatarUrl: text("avatar_url").notNull().default(""),
-		theme: text("theme").notNull().default("minimal"),
 		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 	},
 	(table) => [
 		uniqueIndex("idx_profiles_slug").on(table.slug),
 		index("idx_profiles_user_id").on(table.userId),
-	],
-);
-
-export const linkItems = pgTable(
-	"link_items",
-	{
-		id: uuid("id").defaultRandom().primaryKey(),
-		profileId: uuid("profile_id")
-			.notNull()
-			.references(() => profiles.id, { onDelete: "cascade" }),
-		type: text("type").notNull().default("link"),
-		title: text("title").notNull().default(""),
-		url: text("url").notNull().default(""),
-		sortOrder: integer("sort_order").notNull().default(0),
-		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-	},
-	(table) => [index("idx_link_items_profile_id").on(table.profileId)],
-);
-
-export const clickEvents = pgTable(
-	"click_events",
-	{
-		id: uuid("id").defaultRandom().primaryKey(),
-		linkItemId: uuid("link_item_id")
-			.notNull()
-			.references(() => linkItems.id, { onDelete: "cascade" }),
-		clickedAt: timestamp("clicked_at", { withTimezone: true }).defaultNow().notNull(),
-	},
-	(table) => [
-		index("idx_click_events_link_item_id").on(table.linkItemId),
-		index("idx_click_events_clicked_at").on(table.clickedAt),
 	],
 );
 
@@ -86,9 +53,26 @@ export const athleteProfiles = pgTable(
 	(t) => [uniqueIndex("idx_athlete_profiles_profile_id").on(t.profileId)],
 );
 
+export const contractReviews = pgTable(
+	"contract_reviews",
+	{
+		id: uuid("id").defaultRandom().primaryKey(),
+		profileId: uuid("profile_id")
+			.notNull()
+			.references(() => profiles.id, { onDelete: "cascade" }),
+		fileName: text("file_name").notNull().default(""),
+		rawText: text("raw_text").notNull().default(""),
+		analysisJson: text("analysis_json").notNull().default("{}"),
+		overallRisk: text("overall_risk").notNull().default("unknown"),
+		flagCount: integer("flag_count").notNull().default(0),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(t) => [index("idx_contract_reviews_profile_id").on(t.profileId)],
+);
+
 export const profilesRelations = relations(profiles, ({ one, many }) => ({
-	linkItems: many(linkItems),
 	athleteProfile: one(athleteProfiles),
+	contractReviews: many(contractReviews),
 }));
 
 export const athleteProfilesRelations = relations(athleteProfiles, ({ one }) => ({
@@ -98,11 +82,6 @@ export const athleteProfilesRelations = relations(athleteProfiles, ({ one }) => 
 	}),
 }));
 
-export const linkItemsRelations = relations(linkItems, ({ one, many }) => ({
-	profile: one(profiles, { fields: [linkItems.profileId], references: [profiles.id] }),
-	clickEvents: many(clickEvents),
-}));
-
-export const clickEventsRelations = relations(clickEvents, ({ one }) => ({
-	linkItem: one(linkItems, { fields: [clickEvents.linkItemId], references: [linkItems.id] }),
+export const contractReviewsRelations = relations(contractReviews, ({ one }) => ({
+	profile: one(profiles, { fields: [contractReviews.profileId], references: [profiles.id] }),
 }));

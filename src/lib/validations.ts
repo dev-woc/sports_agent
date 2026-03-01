@@ -38,35 +38,15 @@ export const profileSchema = z.object({
 	displayName: z.string().max(50, "Name must be at most 50 characters"),
 	bio: z.string().max(160, "Bio must be at most 160 characters"),
 	avatarUrl: z.string().url("Must be a valid URL").or(z.literal("")),
-	theme: z.enum(["minimal", "dark", "colorful", "professional"]),
-});
-
-export const linkItemSchema = z
-	.object({
-		type: z.enum(["link", "header", "divider"]),
-		title: z.string().max(100).optional(),
-		url: z.string().url("Must be a valid URL").optional(),
-	})
-	.refine(
-		(data) => {
-			if (data.type === "link") return !!data.title && !!data.url;
-			if (data.type === "header") return !!data.title;
-			return true;
-		},
-		{ message: "Links require title and URL; headers require title" },
-	);
-
-export const reorderSchema = z.object({
-	items: z.array(
-		z.object({
-			id: z.string().uuid(),
-			sortOrder: z.number().int().nonnegative(),
-		}),
-	),
 });
 
 export const slugCheckSchema = z.object({
 	slug: z.string().min(1),
+});
+
+export const contractSubmitSchema = z.object({
+	fileName: z.string().max(255).optional().default(""),
+	rawText: z.string().max(200_000).optional().default(""),
 });
 
 export const DIVISIONS = ["D1", "D2", "D3", "NAIA", "NJCAA", "High School"] as const;

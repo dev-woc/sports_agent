@@ -1,5 +1,5 @@
 import https from "node:https";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -73,8 +73,7 @@ async function proxy(
 		process.env.NEXT_PUBLIC_APP_URL ??
 		(() => {
 			const proto = request.headers.get("x-forwarded-proto") ?? "https";
-			const host =
-				request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "";
+			const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "";
 			return `${proto}://${host}`;
 		})();
 
@@ -97,9 +96,7 @@ async function proxy(
 	if (authCookies) upstreamHeaders["cookie"] = authCookies;
 
 	const body =
-		request.method !== "GET" && request.method !== "HEAD"
-			? await request.text()
-			: undefined;
+		request.method !== "GET" && request.method !== "HEAD" ? await request.text() : undefined;
 
 	const upstream = await httpsRequest(upstreamUrl, request.method, upstreamHeaders, body);
 
@@ -121,16 +118,10 @@ async function proxy(
 	});
 }
 
-export async function GET(
-	request: NextRequest,
-	context: { params: Promise<{ path: string[] }> },
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
 	return proxy(request, context);
 }
 
-export async function POST(
-	request: NextRequest,
-	context: { params: Promise<{ path: string[] }> },
-) {
+export async function POST(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
 	return proxy(request, context);
 }

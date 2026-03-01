@@ -1,11 +1,5 @@
 import { describe, expect, test } from "vitest";
-import {
-	athleteProfileSchema,
-	linkItemSchema,
-	profileSchema,
-	reorderSchema,
-	slugSchema,
-} from "../validations";
+import { athleteProfileSchema, profileSchema, slugSchema } from "../validations";
 
 describe("slugSchema", () => {
 	test("valid slugs pass", () => {
@@ -51,7 +45,6 @@ describe("profileSchema", () => {
 			displayName: "John Doe",
 			bio: "Hello world",
 			avatarUrl: "https://example.com/avatar.jpg",
-			theme: "minimal",
 		});
 		expect(result.success).toBe(true);
 	});
@@ -61,7 +54,6 @@ describe("profileSchema", () => {
 			displayName: "John",
 			bio: "a".repeat(161),
 			avatarUrl: "",
-			theme: "minimal",
 		});
 		expect(result.success).toBe(false);
 	});
@@ -71,7 +63,6 @@ describe("profileSchema", () => {
 			displayName: "John",
 			bio: "a".repeat(160),
 			avatarUrl: "",
-			theme: "minimal",
 		});
 		expect(result.success).toBe(true);
 	});
@@ -81,7 +72,6 @@ describe("profileSchema", () => {
 			displayName: "John",
 			bio: "",
 			avatarUrl: "not-a-url",
-			theme: "minimal",
 		});
 		expect(result.success).toBe(false);
 	});
@@ -91,7 +81,6 @@ describe("profileSchema", () => {
 			displayName: "John",
 			bio: "",
 			avatarUrl: "",
-			theme: "dark",
 		});
 		expect(result.success).toBe(true);
 	});
@@ -101,86 +90,6 @@ describe("profileSchema", () => {
 			displayName: "a".repeat(51),
 			bio: "",
 			avatarUrl: "",
-			theme: "minimal",
-		});
-		expect(result.success).toBe(false);
-	});
-});
-
-describe("linkItemSchema", () => {
-	test("link with title and url passes", () => {
-		const result = linkItemSchema.safeParse({
-			type: "link",
-			title: "My Link",
-			url: "https://example.com",
-		});
-		expect(result.success).toBe(true);
-	});
-
-	test("link without url fails", () => {
-		const result = linkItemSchema.safeParse({
-			type: "link",
-			title: "My Link",
-		});
-		expect(result.success).toBe(false);
-	});
-
-	test("header with title passes", () => {
-		const result = linkItemSchema.safeParse({
-			type: "header",
-			title: "Section",
-		});
-		expect(result.success).toBe(true);
-	});
-
-	test("header without title fails", () => {
-		const result = linkItemSchema.safeParse({
-			type: "header",
-		});
-		expect(result.success).toBe(false);
-	});
-
-	test("divider passes with no fields", () => {
-		const result = linkItemSchema.safeParse({
-			type: "divider",
-		});
-		expect(result.success).toBe(true);
-	});
-});
-
-describe("reorderSchema", () => {
-	test("valid array passes", () => {
-		const result = reorderSchema.safeParse({
-			items: [
-				{ id: "550e8400-e29b-41d4-a716-446655440000", sortOrder: 0 },
-				{ id: "550e8400-e29b-41d4-a716-446655440001", sortOrder: 1 },
-			],
-		});
-		expect(result.success).toBe(true);
-	});
-
-	test("empty array passes", () => {
-		const result = reorderSchema.safeParse({ items: [] });
-		expect(result.success).toBe(true);
-	});
-
-	test("missing id fails", () => {
-		const result = reorderSchema.safeParse({
-			items: [{ sortOrder: 0 }],
-		});
-		expect(result.success).toBe(false);
-	});
-
-	test("negative sortOrder fails", () => {
-		const result = reorderSchema.safeParse({
-			items: [{ id: "550e8400-e29b-41d4-a716-446655440000", sortOrder: -1 }],
-		});
-		expect(result.success).toBe(false);
-	});
-
-	test("non-uuid id fails", () => {
-		const result = reorderSchema.safeParse({
-			items: [{ id: "not-a-uuid", sortOrder: 0 }],
 		});
 		expect(result.success).toBe(false);
 	});

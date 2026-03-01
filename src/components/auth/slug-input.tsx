@@ -60,7 +60,8 @@ export function SlugInput({ value, onChange, error }: SlugInputProps) {
 					placeholder="your-username"
 				/>
 				{status === "available" && (
-					<span role="img"
+					<span
+						role="img"
 						className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600"
 						aria-label="Available"
 					>
@@ -68,7 +69,8 @@ export function SlugInput({ value, onChange, error }: SlugInputProps) {
 					</span>
 				)}
 				{(status === "taken" || status === "invalid") && (
-					<span role="img"
+					<span
+						role="img"
 						className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600"
 						aria-label="Unavailable"
 					>

@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
 import { db } from "@/lib/db";
-import { linkItems, profiles } from "@/lib/db/schema";
+import { profiles } from "@/lib/db/schema";
 import { apiRateLimiter } from "@/lib/rate-limit";
 import { profileSchema, slugSchema } from "@/lib/validations";
 
@@ -24,16 +24,7 @@ export async function GET(request: Request) {
 		where: eq(profiles.userId, session.user.id),
 	});
 
-	if (!profile) {
-		return NextResponse.json({ profile: null, links: [] });
-	}
-
-	const links = await db.query.linkItems.findMany({
-		where: eq(linkItems.profileId, profile.id),
-		orderBy: [asc(linkItems.sortOrder)],
-	});
-
-	return NextResponse.json({ profile, links });
+	return NextResponse.json({ profile: profile ?? null });
 }
 
 export async function POST(request: Request) {
@@ -104,7 +95,6 @@ export async function PUT(request: Request) {
 			displayName: result.data.displayName,
 			bio: result.data.bio,
 			avatarUrl: result.data.avatarUrl,
-			theme: result.data.theme,
 			updatedAt: new Date(),
 		})
 		.where(eq(profiles.userId, session.user.id))

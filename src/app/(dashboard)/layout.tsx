@@ -22,13 +22,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 							Athlete OS
 						</Link>
 						<nav className="hidden items-center gap-6 text-sm sm:flex">
-							<Link href="/editor" className="font-medium transition-colors hover:text-primary">
-								Profile
+							<Link href="/contracts" className="font-medium transition-colors hover:text-primary">
+								Contract Guard
 							</Link>
-							<span className="cursor-not-allowed select-none text-muted-foreground">NIL</span>
-							<span className="cursor-not-allowed select-none text-muted-foreground">
-								Contracts
-							</span>
 						</nav>
 					</div>
 					<div className="flex items-center gap-3">

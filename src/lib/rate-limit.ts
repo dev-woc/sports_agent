@@ -28,3 +28,4 @@ export function createRateLimiter(maxRequests: number, windowMs: number) {
 
 export const apiRateLimiter = createRateLimiter(30, 60_000);
 export const slugCheckRateLimiter = createRateLimiter(60, 60_000);
+export const contractRateLimiter = createRateLimiter(5, 60_000);
