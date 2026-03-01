@@ -19,11 +19,20 @@ async function proxy(
 	const { search } = new URL(request.url);
 	const upstreamUrl = `${baseUrl}/${pathStr}${search}`;
 
-	// Use the browser-sent Origin header as primary source (most reliable).
-	// Fall back to constructing from forwarding headers for non-browser callers.
-	const browserOrigin = request.headers.get("origin");
+	// Determine the app origin Neon Auth should accept.
+	// Browsers omit Origin for same-origin requests — extract it from Referer instead.
+	const refererOrigin = (() => {
+		try {
+			const ref = request.headers.get("referer");
+			return ref ? new URL(ref).origin : null;
+		} catch {
+			return null;
+		}
+	})();
 	const appOrigin =
-		browserOrigin ??
+		request.headers.get("origin") ??
+		refererOrigin ??
+		process.env.NEXT_PUBLIC_APP_URL ??
 		(() => {
 			const proto = request.headers.get("x-forwarded-proto") ?? "https";
 			const host =
