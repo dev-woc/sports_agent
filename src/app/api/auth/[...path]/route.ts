@@ -19,10 +19,17 @@ async function proxy(
 	const { search } = new URL(request.url);
 	const upstreamUrl = `${baseUrl}/${pathStr}${search}`;
 
-	// Build canonical app origin from Vercel forwarding headers
-	const proto = request.headers.get("x-forwarded-proto") ?? "https";
-	const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "";
-	const appOrigin = `${proto}://${host}`;
+	// Use the browser-sent Origin header as primary source (most reliable).
+	// Fall back to constructing from forwarding headers for non-browser callers.
+	const browserOrigin = request.headers.get("origin");
+	const appOrigin =
+		browserOrigin ??
+		(() => {
+			const proto = request.headers.get("x-forwarded-proto") ?? "https";
+			const host =
+				request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "";
+			return `${proto}://${host}`;
+		})();
 
 	const upstreamHeaders: Record<string, string> = {
 		Origin: appOrigin,
