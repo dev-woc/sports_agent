@@ -1,10 +1,49 @@
+import https from "node:https";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-// Forward-proxy approach: bypass the SDK handler so we control the exact
-// Origin header sent to Neon Auth. The SDK recreates Request objects in
-// ways that can drop or mangle the origin header in Vercel's Node.js runtime.
+// node:https bypasses the Fetch API's forbidden-header restriction.
+// The built-in fetch (undici) silently strips "Origin" because it is a
+// forbidden request header per the Fetch spec. Using node:https lets us
+// set Origin explicitly so Neon Auth's origin check passes.
+function httpsRequest(
+	url: string,
+	method: string,
+	headers: Record<string, string>,
+	body?: string,
+): Promise<{ status: number; headers: Record<string, string | string[]>; body: string }> {
+	return new Promise((resolve, reject) => {
+		const parsed = new URL(url);
+		const reqHeaders: Record<string, string> = { ...headers };
+		if (body !== undefined) reqHeaders["content-length"] = Buffer.byteLength(body).toString();
+
+		const req = https.request(
+			{
+				hostname: parsed.hostname,
+				port: parsed.port || 443,
+				path: parsed.pathname + parsed.search,
+				method,
+				headers: reqHeaders,
+			},
+			(res) => {
+				const chunks: Buffer[] = [];
+				res.on("data", (chunk: Buffer) => chunks.push(chunk));
+				res.on("end", () => {
+					resolve({
+						status: res.statusCode ?? 200,
+						headers: res.headers as Record<string, string | string[]>,
+						body: Buffer.concat(chunks).toString("utf-8"),
+					});
+				});
+			},
+		);
+		req.on("error", reject);
+		if (body !== undefined) req.write(body);
+		req.end();
+	});
+}
+
 async function proxy(
 	request: NextRequest,
 	context: { params: Promise<{ path: string[] }> },
@@ -15,12 +54,11 @@ async function proxy(
 	const { path } = await context.params;
 	const pathStr = path.join("/");
 
-	// Preserve query string
 	const { search } = new URL(request.url);
 	const upstreamUrl = `${baseUrl}/${pathStr}${search}`;
 
-	// Determine the app origin Neon Auth should accept.
-	// Browsers omit Origin for same-origin requests — extract it from Referer instead.
+	// Determine the app origin. Browsers omit Origin for same-origin requests;
+	// extract it from Referer as a fallback.
 	const refererOrigin = (() => {
 		try {
 			const ref = request.headers.get("referer");
@@ -41,50 +79,40 @@ async function proxy(
 		})();
 
 	const upstreamHeaders: Record<string, string> = {
-		Origin: appOrigin,
+		origin: appOrigin,
 		"x-neon-auth-middleware": "true",
 	};
 
-	// Forward content-type and authorization when present
 	for (const h of ["content-type", "authorization", "user-agent"] as const) {
 		const v = request.headers.get(h);
 		if (v) upstreamHeaders[h] = v;
 	}
 
-	// Forward auth cookies only
 	const cookie = request.headers.get("cookie") ?? "";
 	const authCookies = cookie
 		.split(";")
 		.map((c) => c.trim())
 		.filter((c) => c.startsWith("__neon-auth"))
 		.join("; ");
-	if (authCookies) upstreamHeaders["Cookie"] = authCookies;
+	if (authCookies) upstreamHeaders["cookie"] = authCookies;
 
 	const body =
-		request.method !== "GET" && request.method !== "HEAD" ? await request.text() : undefined;
+		request.method !== "GET" && request.method !== "HEAD"
+			? await request.text()
+			: undefined;
 
-	const upstream = await fetch(upstreamUrl, {
-		method: request.method,
-		headers: upstreamHeaders,
-		body,
-	});
+	const upstream = await httpsRequest(upstreamUrl, request.method, upstreamHeaders, body);
 
-	// Build the response — forward all set-cookie and auth headers
 	const resHeaders = new Headers();
-	const FORWARD_HEADERS = [
-		"content-type",
-		"set-cookie",
-		"set-auth-jwt",
-		"set-auth-token",
-		"x-neon-ret-request-id",
-	];
-	for (const h of FORWARD_HEADERS) {
-		const v = upstream.headers.get(h);
-		if (v) resHeaders.set(h, v);
-	}
-	// getSetCookie() returns all Set-Cookie headers as an array
-	for (const sc of upstream.headers.getSetCookie?.() ?? []) {
-		resHeaders.append("set-cookie", sc);
+	for (const [k, v] of Object.entries(upstream.headers)) {
+		const lower = k.toLowerCase();
+		if (lower === "content-type" || lower === "x-neon-ret-request-id") {
+			resHeaders.set(k, Array.isArray(v) ? v[v.length - 1] : v);
+		} else if (lower === "set-cookie") {
+			// set-cookie may come as an array from node:https
+			const cookies = Array.isArray(v) ? v : [v];
+			for (const sc of cookies) resHeaders.append("set-cookie", sc);
+		}
 	}
 
 	return new Response(upstream.body, {
@@ -93,10 +121,16 @@ async function proxy(
 	});
 }
 
-export async function GET(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
+export async function GET(
+	request: NextRequest,
+	context: { params: Promise<{ path: string[] }> },
+) {
 	return proxy(request, context);
 }
 
-export async function POST(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
+export async function POST(
+	request: NextRequest,
+	context: { params: Promise<{ path: string[] }> },
+) {
 	return proxy(request, context);
 }
