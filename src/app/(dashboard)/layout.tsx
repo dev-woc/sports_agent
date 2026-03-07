@@ -25,6 +25,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 							<Link href="/contracts" className="font-medium transition-colors hover:text-primary">
 								Contract Guard
 							</Link>
+							<Link href="/deals" className="font-medium transition-colors hover:text-primary">
+								NIL Deals
+							</Link>
 						</nav>
 					</div>
 					<div className="flex items-center gap-3">

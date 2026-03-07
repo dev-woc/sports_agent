@@ -70,6 +70,46 @@ export const contractReviews = pgTable(
 	(t) => [index("idx_contract_reviews_profile_id").on(t.profileId)],
 );
 
+export const brandCampaigns = pgTable(
+	"brand_campaigns",
+	{
+		id: uuid("id").defaultRandom().primaryKey(),
+		brandName: text("brand_name").notNull(),
+		campaignTitle: text("campaign_title").notNull(),
+		description: text("description").notNull().default(""),
+		productCategory: text("product_category").notNull(),
+		budgetRange: text("budget_range").notNull().default(""),
+		geographyStates: text("geography_states").notNull().default("ALL"),
+		sportPreferences: text("sport_preferences").notNull().default("ALL"),
+		divisionPreferences: text("division_preferences").notNull().default("ALL"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(t) => [index("idx_brand_campaigns_is_active").on(t.isActive)],
+);
+
+export const dealApplications = pgTable(
+	"deal_applications",
+	{
+		id: uuid("id").defaultRandom().primaryKey(),
+		campaignId: uuid("campaign_id")
+			.notNull()
+			.references(() => brandCampaigns.id, { onDelete: "cascade" }),
+		profileId: uuid("profile_id")
+			.notNull()
+			.references(() => profiles.id, { onDelete: "cascade" }),
+		status: text("status").notNull().default("pending"),
+		matchScore: integer("match_score").notNull().default(0),
+		matchReasons: text("match_reasons").notNull().default("[]"),
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(t) => [
+		index("idx_deal_applications_profile_id").on(t.profileId),
+		index("idx_deal_applications_campaign_id").on(t.campaignId),
+		uniqueIndex("idx_deal_applications_unique").on(t.campaignId, t.profileId),
+	],
+);
+
 export const profilesRelations = relations(profiles, ({ one, many }) => ({
 	athleteProfile: one(athleteProfiles),
 	contractReviews: many(contractReviews),
@@ -84,4 +124,16 @@ export const athleteProfilesRelations = relations(athleteProfiles, ({ one }) => 
 
 export const contractReviewsRelations = relations(contractReviews, ({ one }) => ({
 	profile: one(profiles, { fields: [contractReviews.profileId], references: [profiles.id] }),
+}));
+
+export const brandCampaignsRelations = relations(brandCampaigns, ({ many }) => ({
+	applications: many(dealApplications),
+}));
+
+export const dealApplicationsRelations = relations(dealApplications, ({ one }) => ({
+	campaign: one(brandCampaigns, {
+		fields: [dealApplications.campaignId],
+		references: [brandCampaigns.id],
+	}),
+	profile: one(profiles, { fields: [dealApplications.profileId], references: [profiles.id] }),
 }));
